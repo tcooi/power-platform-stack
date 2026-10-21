@@ -12,11 +12,11 @@ Build roles repeatably with tools, not by clicking. Every change still needs use
 | Task | First choice | Fallback |
 |---|---|---|
 | Create or edit the app's own roles | `/app-builder` `personas[]` (one role per persona; a rebuild sets privileges to exactly what the spec lists) | Web API `POST /roles` + `ReplacePrivilegesRole` |
-| Give an existing role access to new tables | `/app-builder` `roleGrants[]` (adds only) | Web API `AddPrivilegesRole` |
-| Remove privileges from a role `/app-builder` didn't create | Web API `RemovePrivilegeRole` (one) or `ReplacePrivilegesRole` (whole set) | Maker portal role designer |
+| Give an existing role access to new tables | `/app-builder` `roleGrants[]` (adds only) | `ppdv role add` (Web API `AddPrivilegesRole`) |
+| Remove privileges from a role `/app-builder` didn't create | `ppdv role remove` (Web API `RemovePrivilegeRole`) | Maker portal role designer |
 | Assign users | `pac admin assign-user` (also adds the user to the environment; business unit defaults to the connection's) or `dv-security` (previews and confirms) | `/app-builder` `personas[].assignTo.users` (adds only); Web API associate |
 | Assign Entra groups / teams | `pac admin assign-group` | `/app-builder` `personas[].assignTo.teams`; Web API `teamroles_association` |
-| Unassign | Web API disassociate | Power Platform admin center |
+| Unassign | `ppdv role unassign` | Power Platform admin center |
 | Application users (integrations, flows) | `pac admin create-service-principal --role "<least-privilege role>"` (defaults to System Administrator otherwise) or `pac admin assign-user --application-user` | Admin center |
 | List roles | `pac admin list-roles --environment <id>` | Web API `GET roles` |
 
@@ -43,6 +43,7 @@ Build roles repeatably with tools, not by clicking. Every change still needs use
 - Never edit roles directly in UAT/PROD; ship them in the solution.
 
 ## Verify
+Permissions as the user: `ppdv test as-user --user <upn> --table <t> --ops create,read,update,delete,read-others --apply`.
 Tested live in TEST-US (2026-10-21): persona role created in the solution and linked to the app, assigned with `pac admin assign-user`, one privilege removed with `RemovePrivilegeRole`, drift caught by verify.
 
 Sign in as a test user per persona and check visibility and CRUD. `/app-builder --verify` also checks persona roles grant at least the declared depth.

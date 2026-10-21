@@ -15,10 +15,20 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
           │     flow-build-standards            /build-flow, /debug-flow
           │     copilot-studio-build-standards  pac copilot
           │
+          ├─ when a Microsoft skill can't do it: our tested toolkit (scripts/ppdv.mjs),
+          │     then the browser (Playwright MCP, you sign in), then ask you
+          │
           └─ delegates non-interactive work to sub-agents (briefs from spawn-templates):
                 requirements-analyst, solution-designer, alm-architect,
-                the-critic, pro-code-developer, solution-reviewer
+                the-critic, pro-code-developer, solution-reviewer, uat-tester
 ```
+
+## Toolkit, guardrails, evals
+
+- **`scripts/ppdv.mjs`** (skill `ppdv-toolkit`): tested commands for what Microsoft's plugins don't cover — Web API with auth/retry/solution header, solution membership, publish, role privileges and assignment, flow on/off through the flow service with trigger checks, choice defaults, view sort, **permission tests as a real user** (`test as-user`), and a tooling `probe`. Writes are dry runs until `--apply`, and only target environments in `.pp/project.json` (production needs `--allow-prod`). Plain Node 18+, no dependencies, works the same from Claude Code and Copilot.
+- **Guardrail hook** (`hooks/hooks.json`, Claude Code): denies shell writes to Dataverse environments not in `.pp/project.json` and asks before production writes. Copilot CLI: not yet verified; ppdv's own guard still applies.
+- **Testing like a user**: `uat-tester` sub-agent and `user-acceptance-test` skill (permissions per persona, automation checks, Playwright UI journeys). **Browser fallback** (`browser-automation-fallback`) for designer-only actions, with approval per action; you sign in, agents never type passwords.
+- **Evals**: `node evals/run.mjs` runs scenarios headless against the lead with the plugin loaded (`claude -p --plugin-dir`) and checks both the answer and the environment. Results in `evals/last-run.json`.
 
 Why this split: Microsoft's build skills ask you questions and wait for approval, and sub-agents can't talk to you (and in Copilot don't inherit skills). So building runs in the main session where every installed skill is available; sub-agents get everything they need written into their brief and return assumptions and open questions.
 
@@ -75,16 +85,16 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 
 ## Contents
 
-**Agents**: pp-delivery-lead (main), requirements-analyst, solution-designer, alm-architect, the-critic, pro-code-developer, solution-reviewer.
+**Agents**: pp-delivery-lead (main), requirements-analyst, solution-designer, alm-architect, the-critic, pro-code-developer, solution-reviewer, uat-tester.
 
 **Skills**:
-- Method: project-context, spawn-templates, tool-selection-guide
+- Method: project-context, spawn-templates, tool-selection-guide, ppdv-toolkit, browser-automation-fallback
 - Discovery and design: fit-gap-analysis, data-model-design, security-model-design, solution-design-document
 - Build standards: dataverse-, model-driven-, canvas-, flow-, copilot-studio-build-standards
 - Build details: dataverse-schema-build, sample-data-load, security-roles-setup, app-modules-forms-views, command-bar-power-fx, business-rules-and-bpf, canvas-performance-delegation, canvas-component-library, flow-error-handling-pattern, flow-dataverse-triggers, agent-instructions-design, agent-evaluation-plan
 - Pro-code: ce-customization-patterns, plugin-development, web-resource-js, pcf-control, custom-api-and-actions
 - ALM: plan-alm, environment-strategy, source-control-unpack, solution-alm-checklist, github-actions-pipeline, azure-devops-pipeline
-- Quality and release: solution-checker-review, security-governance-review, test-strategy, uat-plan, go-live-checklist, handover-documentation
+- Quality and release: user-acceptance-test, solution-checker-review, security-governance-review, test-strategy, uat-plan, go-live-checklist, handover-documentation
 
 Microsoft Learn MCP is bundled (`.mcp.json`).
 

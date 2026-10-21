@@ -17,9 +17,9 @@ description: "Our standards for Power Automate cloud flows, applied together wit
 
 ## Lessons from live builds (TEST-US, 2026-10-21)
 - `/build-flow` runs headless (forked) and its FlowAgent `create_flow` cannot create a flow inside a solution, so it falls back to writing the `workflow` row through the Web API. Expect that, and check the result.
-- **Turn flows on and off through the flow service** (`publish_flow` / `disable_flow` in the power-automate plugin). Setting `statecode` on the `workflow` row shows the flow as on but does **not** register its Dataverse trigger.
+- **Turn flows on and off through the flow service**: `ppdv flow enable|disable --flow <id> --apply` (or `publish_flow` / `disable_flow` in the power-automate plugin). Setting `statecode` on the `workflow` row shows the flow as on but does **not** register its Dataverse trigger.
 - For a Dataverse trigger written through the Web API: set `subscriptionRequest/name` to `<workflowid>:MTA`, and don't set `subscriptionRequest/filteringattributes` on a create-only trigger (message 1); filters only apply to updates.
-- After turning a flow on, verify the trigger is registered: `GET callbackregistrations?$filter=entityname eq '<table>'` must return `<workflowid>:MTA`. A flow can show Started with no runs and no error when it isn't.
+- After turning a flow on, run `ppdv flow check-trigger --flow <id>` (and `ppdv flow fix-trigger` if it reports issues). Under the hood: `GET callbackregistrations?$filter=entityname eq '<table>'` must return `<workflowid>:MTA`. A flow can show Started with no runs and no error when it isn't.
 - Prove it with one live test row (user-approved) and check run history before calling the flow done.
 
 

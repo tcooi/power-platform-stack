@@ -20,7 +20,10 @@ Our plugin holds the consulting method (phases, approvals, standards). **Buildin
 
 Install all Power Platform plugins: `/plugin marketplace add microsoft/power-platform-skills`, then install the plugins above.
 
-## 2. Underlying tools (what those plugins and our agents use)
+## 2. Our toolkit (when Microsoft's plugins stop)
+`scripts/ppdv.mjs` (skill `ppdv-toolkit`): tested commands with dry runs and an environment guard for Web API calls, solution membership, publish, role privileges/assignment, flow enable/disable and trigger checks, choice defaults, view sort, permission tests as a user, and the tooling probe. Browser actions (skill `browser-automation-fallback`) come after that.
+
+## 3. Underlying tools (what those plugins and our agents use)
 
 | Tool | Best for | Notes |
 |---|---|---|
@@ -28,10 +31,10 @@ Install all Power Platform plugins: `/plugin marketplace add microsoft/power-pla
 | **Dataverse CLI** (`npm i -g @microsoft/dataverse`, preview) | Auth profiles (shared with pac), headless data query/CRUD/upsert, invoking custom APIs, local MCP proxy (`dataverse mcp <url>`) | `dataverse mcp <url> --validate` checks MCP prerequisites |
 | **Dataverse SDK for Python** | Scripted schema operations, bulk data, paging, transformations, analytics | Uses the Web API |
 | **pac CLI** | Solution ALM (`pac solution`), environments (`pac admin`), role assignment (`pac admin assign-user`), plug-ins (`pac plugin`), PCF (`pac pcf`), model apps (`pac model`), Copilot Studio (`pac copilot`), pipelines (`pac pipeline`) | `pac copilot mcp --run` exposes pac as a local MCP server (needs .NET 10) |
-| **Dataverse Web API** | Only what managed tools don't cover | Metadata writes with `MSCRM.SolutionUniqueName: <solution>`; read back with `Consistency: Strong` (metadata cache ~30 s) |
+| **Dataverse Web API** | Only what managed tools don't cover — call it through `ppdv request`, not raw curl | Metadata writes with `MSCRM.SolutionUniqueName: <solution>`; read back with `Consistency: Strong` (metadata cache ~30 s) |
 | **Maker designers** | Form header fields, command bar (modern designer), anything without an API skill | Always inside the working solution |
 
-## 3. By task
+## 4. By task
 
 | Task | Use | Avoid |
 |---|---|---|
@@ -44,12 +47,14 @@ Install all Power Platform plugins: `/plugin marketplace add microsoft/power-pla
 | Solution export/import/pack/check | `dv-solution` or `pac solution …` | Opening zips with standard tools |
 | Source control | Dataverse Git integration (dev environments; managed environments required) or `pac solution clone`/`export`+`unpack` | `pac canvas pack/unpack` (deprecated) |
 | Deployment | Pipelines in Power Platform (`pac pipeline deploy`), or GitHub Actions / Azure DevOps Build Tools v2 with a deployment settings file (`pac solution create-settings`) | Manual imports into UAT/PROD |
-| Cloud flows | `power-automate` plugin | Writing `clientdata` JSON blind |
+| Cloud flows | `power-automate` plugin; turn on/off and check triggers with `ppdv flow …` | Writing `clientdata` JSON blind; PATCHing `statecode` |
 | Canvas apps | `canvas-apps` plugin (coauthoring) | Editing `.msapp` or `.fx.yaml` |
 | Plug-ins | `pac plugin init --skip-signing` → plug-in package → `pac plugin push` / Plug-in Registration Tool | ILMerge (unsupported) |
 | PCF | `pcf` plugin or `pac pcf init -fw react` → solution project | Shipping the temporary `PowerAppsTools_<prefix>` solution |
 | Copilot Studio agents | `pac copilot clone/pull/push/pack` or the Copilot Studio VS Code extension | Pushing without pulling first |
-| UI tests | Power Platform Playwright samples | Test Engine / `pac test` (deprecated April 2026) |
+| Permission tests | `ppdv test as-user` per persona | Assuming roles work because the build passed |
+| UI tests | Power Platform Playwright samples / Playwright MCP (`user-acceptance-test`) | Test Engine / `pac test` (deprecated April 2026) |
+| Designer-only actions | `browser-automation-fallback` (approval per action, user signs in) | Asking the user to click when the browser can do it |
 | Docs and syntax | Microsoft Learn MCP (bundled) | Answering from memory |
 
 ## Rules
