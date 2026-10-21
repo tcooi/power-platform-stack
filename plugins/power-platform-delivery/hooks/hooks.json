@@ -4,7 +4,7 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/guard-hook.mjs\"" }
+          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run-guard-hook.sh\"" }
         ]
       }
     ]

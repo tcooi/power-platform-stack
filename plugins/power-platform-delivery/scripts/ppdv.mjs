@@ -409,7 +409,7 @@ function probe() {
   };
   // Skills shipped by installed plugins (Claude Code cache; Copilot CLI if present)
   const skills = {};
-  const roots = [join(homedir(), ".claude/plugins/cache"), join(homedir(), ".copilot/installed-plugins")];
+  const roots = [join(homedir(), ".claude/plugins/cache"), join(homedir(), ".copilot/installed-plugins"), join(homedir(), "Library/Caches/copilot/marketplaces"), join(homedir(), ".cache/copilot/marketplaces")];
   for (const root of roots) {
     if (!existsSync(root)) continue;
     const walk = (d, depth) => {

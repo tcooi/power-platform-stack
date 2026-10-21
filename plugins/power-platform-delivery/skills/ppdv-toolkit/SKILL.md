@@ -5,7 +5,12 @@ description: "Tested command-line toolkit (scripts/ppdv.mjs) for Power Platform 
 
 # ppdv toolkit
 
-Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>` — the plugin root is two folders above this skill's base directory (`…/power-platform-delivery/scripts/ppdv.mjs`). Output is always JSON.
+Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is always JSON.
+
+**Finding the plugin root**
+- Claude Code: two folders above this skill's base directory (shown when the skill loads), or `$CLAUDE_PLUGIN_ROOT` in hooks.
+- Copilot CLI: `~/.copilot/installed-plugins/<marketplace>/power-platform-delivery` (e.g. `~/.copilot/installed-plugins/ppp/power-platform-delivery`).
+- Anywhere: `ls -d ~/.claude/plugins/cache/*/power-platform-delivery/*/ ~/.copilot/installed-plugins/*/power-platform-delivery 2>/dev/null` and use the newest.
 
 **Safety built in**
 - Target comes from `.pp/project.json` (first environment, or `--target <key>`), or `--env <url>`.

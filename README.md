@@ -26,9 +26,9 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
 ## Toolkit, guardrails, evals
 
 - **`scripts/ppdv.mjs`** (skill `ppdv-toolkit`): tested commands for what Microsoft's plugins don't cover — Web API with auth/retry/solution header, solution membership, publish, role privileges and assignment, flow on/off through the flow service with trigger checks, choice defaults, view sort, **permission tests as a real user** (`test as-user`), and a tooling `probe`. Writes are dry runs until `--apply`, and only target environments in `.pp/project.json` (production needs `--allow-prod`). Plain Node 18+, no dependencies, works the same from Claude Code and Copilot.
-- **Guardrail hook** (`hooks/hooks.json`, Claude Code): denies shell writes to Dataverse environments not in `.pp/project.json` and asks before production writes. Copilot CLI: not yet verified; ppdv's own guard still applies.
+- **Guardrail hook**: denies shell writes to Dataverse environments not in `.pp/project.json` and asks before production writes. Claude Code reads `hooks/hooks.json`; Copilot CLI gets `hooks.json` in its own format. A wrapper (`scripts/run-guard-hook.sh`) finds the script in either install and never blocks when it can't (a crashing hook in Copilot would deny every call). ppdv's own guard applies in both tools regardless.
 - **Testing like a user**: `uat-tester` sub-agent and `user-acceptance-test` skill (permissions per persona, automation checks, Playwright UI journeys). **Browser fallback** (`browser-automation-fallback`) for designer-only actions, with approval per action; you sign in, agents never type passwords.
-- **Evals**: `node evals/run.mjs` runs scenarios headless against the lead with the plugin loaded (`claude -p --plugin-dir`) and checks both the answer and the environment. Results in `evals/last-run.json`.
+- **Evals**: `node evals/run.mjs` runs scenarios headless against the lead with the plugin loaded (`claude -p --plugin-dir`) and checks both the answer and the environment. Results in `evals/last-run.json`. `--all` adds the slow Full-mode scenario (lead + 4 sub-agents + critic loop, ~10 min, ~$7 per run), which passed on 2026-10-22.
 
 Why this split: Microsoft's build skills ask you questions and wait for approval, and sub-agents can't talk to you (and in Copilot don't inherit skills). So building runs in the main session where every installed skill is available; sub-agents get everything they need written into their brief and return assumptions and open questions.
 
@@ -97,6 +97,10 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 - Quality and release: user-acceptance-test, solution-checker-review, security-governance-review, test-strategy, uat-plan, go-live-checklist, handover-documentation
 
 Microsoft Learn MCP is bundled (`.mcp.json`).
+
+## Status in GitHub Copilot CLI (2026-10-22)
+- Marketplace and plugin install correctly (`copilot plugin marketplace add tcooi/power-platform`, `copilot plugin install power-platform-delivery@ppp` → 44 skills).
+- Not yet verified with a model: the test account's Copilot CLI access was blocked by policy. Organizations can also disable third-party MCP servers, which removes the bundled Microsoft Learn server and Microsoft's Playwright/FlowAgent servers in Copilot; the toolkit (`ppdv`) doesn't depend on MCP.
 
 ## Upgrading from 1.x
 The ten 1.x plugins (pp-delivery-lead, dataverse-builder, …) are merged into `power-platform-delivery`. Uninstall the old ones, then install this plugin.

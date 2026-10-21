@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PreToolUse hook (Claude Code): blocks shell writes to Dataverse environments that are not in .pp/project.json,
+// PreToolUse hook (Claude Code and Copilot CLI): blocks shell writes to Dataverse environments that are not in .pp/project.json,
 // and asks before writes to production entries. Reads the hook payload on stdin; prints a decision as JSON.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -7,7 +7,8 @@ import { dirname, join } from "node:path";
 let input = "";
 process.stdin.on("data", (c) => (input += c)).on("end", () => {
   let ev; try { ev = JSON.parse(input); } catch { process.exit(0); }
-  const cmd = ev?.tool_input?.command || "";
+  const args = ev?.tool_input ?? (typeof ev?.toolArgs === "string" ? (() => { try { return JSON.parse(ev.toolArgs); } catch { return { command: ev.toolArgs }; } })() : ev?.toolArgs);
+  const cmd = args?.command || "";
   const urls = [...cmd.matchAll(/https?:\/\/([a-z0-9-]+)\.(?:api\.)?(crm\d*)\.dynamics\.com/gi)].map((m) => `https://${m[1]}.${m[2]}.dynamics.com`.toLowerCase());
   const isWrite =
     /\bcurl\b[\s\S]*(-X\s*(POST|PATCH|PUT|DELETE)|--request\s+(POST|PATCH|PUT|DELETE)|\s-d\s|--data)/i.test(cmd) ||
@@ -21,7 +22,8 @@ process.stdin.on("data", (c) => (input += c)).on("end", () => {
   const envs = Object.entries(JSON.parse(readFileSync(projectPath, "utf8")).environments || {});
   const norm = (u) => u.toLowerCase().replace(/\/+$/, "").replace(".api.crm", ".crm");
   const decide = (decision, reason) => {
-    process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason } }));
+    // Claude Code reads hookSpecificOutput; Copilot CLI reads the top-level fields. One object serves both.
+    process.stdout.write(JSON.stringify({ permissionDecision: decision, permissionDecisionReason: reason, hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason } }));
     process.exit(0);
   };
   for (const u of new Set(urls)) {

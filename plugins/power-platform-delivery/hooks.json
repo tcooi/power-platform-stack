@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "bash": "f=$(ls \"$HOME\"/.copilot/installed-plugins/*/power-platform-delivery/scripts/run-guard-hook.sh 2>/dev/null | head -1); if [ -n \"$f\" ]; then sh \"$f\"; else cat >/dev/null; fi",
+        "timeoutSec": 15
+      }
+    ]
+  }
+}
