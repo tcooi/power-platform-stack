@@ -31,6 +31,7 @@ Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is 
 | Dataverse trigger health | `flow check-trigger --flow <id>` · `flow fix-trigger --flow <id>` (flow off first) |
 | Choice column default | `choice default --table T --column C --value <int>` (form default only; API creates don't get it) |
 | View sort | `view sort --view <name or id> --table T --attr <col> [--desc] [--replace]` |
+| Record test artifacts / clean up | `artifacts add --type row|flow|bot|role|appmodule|webresource|connectionreference|column|table|solution --id <id> [--table T]` · `artifacts list` · `teardown` (dry run; `--apply` deletes in dependency order; only what was recorded) |
 | What can a user actually do? | `test as-user --user <upn> --table T [--ops create,read,update,delete,read-others]` (impersonates via `CallerObjectId`, cleans up its rows) |
 
 **Verified live in TEST-US (2026-10-22):** probe, whoami, guard refusal, role add/remove/assign/unassign/members, solution has, flow state/disable/enable/check-trigger/fix-trigger, choice default, view sort (fixed the app-builder sort gap; Microsoft's verifier then passed 19/19), test as-user (persona role: create/read/update allowed, delete and read-others denied).

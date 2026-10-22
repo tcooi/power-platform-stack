@@ -4,7 +4,7 @@
 // Every write is a dry run unless --apply is passed, and is refused when the target environment
 // is not in .pp/project.json (or is marked production without --allow-prod).
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 
@@ -31,6 +31,9 @@ Writes:   dry run by default; add --apply. Production targets also need --allow-
   choice default --table <logical> --column <logical> --value <int> [--solution <name>]
   view sort --view <name|guid> --table <logical> --attr <col> [--desc] [--replace]
   test as-user --user <upn|guid> --table <logical> [--ops create,read,update,delete,read-others]
+  artifacts add --type <row|flow|bot|role|appmodule|webresource|connectionreference|column|table|solution> --id <guid|logicalname> [--table <logical>] [--name <text>]
+  artifacts list                                 Test artifacts recorded in .pp/test-artifacts.json
+  teardown                                       Delete recorded test artifacts in dependency order (dry run; --apply)
 `;
 
 // ---------------------------------------------------------------- args
@@ -377,7 +380,68 @@ async function main() {
     return out({ ok: true, user: u.domainname, table, results: res, cleanedUp: true });
   }
 
+  if (cmd === "artifacts") {
+    const a = loadArtifacts();
+    if (sub === "list") return out({ ok: true, file: artifactsPath(), artifacts: a.artifacts.filter((x) => !x.removed) });
+    if (sub === "add") {
+      if (!ORDER.includes(opt.type) || !opt.id) fail(`--type (${ORDER.join("|")}) and --id required`);
+      if ((opt.type === "row" || opt.type === "column") && !opt.table) fail("--table required for rows and columns");
+      a.artifacts.push({ type: opt.type, id: opt.id, table: opt.table, name: opt.name, env: ENV, added: new Date().toISOString() });
+      saveArtifacts(a);
+      return out({ ok: true, recorded: a.artifacts.at(-1) });
+    }
+  }
+
+  if (cmd === "teardown") {
+    const a = loadArtifacts();
+    const todo = a.artifacts.filter((x) => !x.removed && norm(x.env) === norm(ENV)).sort((x, y) => ORDER.indexOf(x.type) - ORDER.indexOf(y.type));
+    if (!todo.length) return out({ ok: true, nothingToDo: true });
+    guardWrite(ENV, todo.map((x) => `delete ${x.type} ${x.name || x.id}`));
+    const results = [];
+    for (const x of todo) {
+      const r = await deleteArtifact(x);
+      const gone = r.ok || r.status === 404;
+      if (gone) x.removed = new Date().toISOString();
+      results.push({ type: x.type, id: x.id, name: x.name, deleted: gone, error: gone ? undefined : r.json?.error?.message?.slice(0, 200) });
+    }
+    saveArtifacts(a);
+    return out({ ok: results.every((r) => r.deleted), results }, results.every((r) => r.deleted) ? 0 : 1);
+  }
+
   fail(`unknown command: ${pos.join(" ")}`, { help: HELP });
+}
+
+
+// ---------------------------------------------------------------- test artifacts (tagged for teardown)
+const ORDER = ["row", "flow", "connectionreference", "bot", "role", "appmodule", "webresource", "column", "table", "solution"];
+function artifactsPath() {
+  if (!projectPath) fail("artifacts need a .pp/project.json (skill project-context)");
+  return join(dirname(projectPath), "test-artifacts.json");
+}
+function loadArtifacts() { const p = artifactsPath(); return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : { artifacts: [] }; }
+function saveArtifacts(a) { writeFileSync(artifactsPath(), JSON.stringify(a, null, 2) + "\n"); }
+async function deleteArtifact(a) {
+  switch (a.type) {
+    case "row": {
+      const md = (await dvOk("GET", `EntityDefinitions(LogicalName='${a.table}')?$select=EntitySetName`)).json;
+      return dv("DELETE", `${md.EntitySetName}(${a.id})`);
+    }
+    case "flow":
+      await dv("PATCH", `workflows(${a.id})`, { body: { statecode: 0, statuscode: 1 }, headers: { "If-Match": "*" } });
+      return dv("DELETE", `workflows(${a.id})`);
+    case "connectionreference": return dv("DELETE", `connectionreferences(${a.id})`);
+    case "bot": return dv("DELETE", `bots(${a.id})`);
+    case "role": return dv("DELETE", `roles(${a.id})`);
+    case "appmodule": return dv("DELETE", `appmodules(${a.id})`);
+    case "webresource": return dv("DELETE", `webresourceset(${a.id})`);
+    case "column": return dv("DELETE", `EntityDefinitions(LogicalName='${a.table}')/Attributes(LogicalName='${a.id}')`);
+    case "table": return dv("DELETE", `EntityDefinitions(LogicalName='${a.id}')`);
+    case "solution": {
+      const s = (await dvOk("GET", `solutions?$select=solutionid&$filter=uniquename eq '${a.id}'`)).json.value[0];
+      return s ? dv("DELETE", `solutions(${s.solutionid})`) : { ok: true, status: 404 };
+    }
+    default: return { ok: false, status: 0, json: { error: { message: `unknown type ${a.type}` } } };
+  }
 }
 
 async function checkTrigger(id) {

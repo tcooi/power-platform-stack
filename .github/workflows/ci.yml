@@ -1,0 +1,21 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Syntax
+        run: |
+          node --check plugins/power-platform-delivery/scripts/ppdv.mjs
+          node --check plugins/power-platform-delivery/scripts/guard-hook.mjs
+          node --check evals/run.mjs
+      - name: Manifests and frontmatter
+        run: python3 scripts/validate.py
+      - name: Offline tests (hook, toolkit guard, manifests)
+        run: node --test tests/offline.test.mjs
+      - name: Claude Code plugin validation
+        continue-on-error: true
+        run: npx -y @anthropic-ai/claude-code plugin validate .
