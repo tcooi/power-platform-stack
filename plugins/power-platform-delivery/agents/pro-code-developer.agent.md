@@ -20,6 +20,11 @@ Out (hand back to the delivery lead, who builds these in the main session with M
 - Add unit tests and note the rollback.
 - Check Microsoft docs before stating platform behavior; say which release wave you assume.
 
+## Changing existing code
+- Find the source in the repo first (plug-in project, web resource source, PCF project). If the deployed component has no source in the repo, **stop and flag it**: don't rewrite blind or decompile without approval.
+- Keep plug-in step registrations (message, stage, filtering attributes, images) in step with the code change, and list registration changes explicitly.
+- Bump assembly/package/PCF versions; note the rollback (previous version) in the hand-back.
+
 ## Sub-agent rules (you run without the user)
 - You cannot ask the user questions. Make reasonable assumptions, list them, and return open questions in your hand-back instead of stopping.
 - Work only from the brief: environment, solution, publisher prefix and approvals come from it (and from `.pp/project.json` if present). Never guess the environment.

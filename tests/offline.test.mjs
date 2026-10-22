@@ -123,3 +123,8 @@ test("ppdv state: tasks, phases and entries are validated", () => {
   assert.equal(s.tasks[0].status, "done"); assert.equal(s.phase, "build");
   assert.equal(ppdvRun(d, ["state", "check"]).json.ok, true);
 });
+
+test("repo: validate.py passes (manifests, frontmatter, sub-agent rules not drifted)", () => {
+  const r = spawnSync("python3", [join(root, "scripts", "validate.py")], { cwd: root, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stdout);
+});

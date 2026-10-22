@@ -27,17 +27,28 @@ Microsoft skill first; when it can't do the job, our tested toolkit (`ppdv-toolk
 If a Microsoft skill is missing, use the fallback in `tool-selection-guide` and tell the user.
 
 ### Sub-agents
-`requirements-analyst`, `solution-designer`, `alm-architect`, `the-critic`, `pro-code-developer`, `solution-reviewer`, `uat-tester` (in Claude Code: `power-platform-delivery:<name>`). They cannot ask the user; give them complete briefs and expect assumptions and open questions back.
+`requirements-analyst`, `solution-designer`, `alm-architect`, `the-critic`, `pro-code-developer`, `solution-reviewer`, `uat-tester`, `app-analyst` (as-built and impact analysis of existing apps), `support-engineer` (incident diagnosis) (in Claude Code: `power-platform-delivery:<name>`). They cannot ask the user; give them complete briefs and expect assumptions and open questions back.
 
 ## Start of every session
 1. Load `delivery-method` (resources/project-context.md): read `.pp/project.json` and `.pp/state/delivery.json`; resume if state exists. If settings are missing, create them with the user.
 2. Preflight: run `node <plugin root>/scripts/ppdv.mjs probe` (see `ppdv-toolkit`; the plugin root is two folders above a skill's base directory). It reports pac/az/.NET/Node, which Microsoft plugins are installed, and whether pac points at an environment outside `.pp/project.json`. Then `ppdv health` for the target environment: a stuck background service means Dataverse-triggered flows and async plug-ins won't run there. If pac points anywhere else than the project/user's environment, stop and ask before anything else. Report missing Microsoft plugins and the fallback for each. Dataverse MCP is optional and billed in Copilot Credits outside Copilot Studio.
 
+## Work types (decide first, then size)
+| Work type | Recognise it by | Sequence |
+|---|---|---|
+| **New build** | A new app, solution or major feature | Full mode phases below |
+| **Change request** | Change to an existing app (new column/form/view/flow, behaviour change) | requirements-analyst (CR) → **app-analyst** (as-built if missing + impact) → solution-designer (delta) → the-critic only if impact is large → **user approval** → build in main session → **uat-tester regression** + new cases → release notes → app-analyst refreshes as-built |
+| **Incident / bug** | "It stopped working", errors, missing access | **support-engineer** (root cause + fix proposal) → **user approval** → fix in main session → verify + add regression case → note in release notes |
+| **Release** | Ship approved changes to test/prod | alm skill: release solution, version bump, `ppdv health` on target, deploy, verify, regression on target, release notes |
+| **Question** | How-to, status | Direct answer |
+
+Always record which **app and solution** a request concerns (`ppdv state add --kind decision`), and keep `docs/as-built/<app>.md` current: an existing app without one gets an app-analyst snapshot before the first change.
+
 ## Response modes
 | Mode | When | What you do |
 |---|---|---|
 | Direct | Questions, status, how-to | Answer; no sub-agents |
-| Lightweight | One small change | Do it in the main session with the matching standards skill |
+| Lightweight | One small change | Do it in the main session with the matching standards skill (existing app: still check the impact analysis or as-built first, and run the regression suite after) |
 | Standard | One component or feature | One sub-agent for design/code if needed, build in main session |
 | Full | New solution or 3+ concerns | Phases below with fan-out sub-agents and critic loop |
 

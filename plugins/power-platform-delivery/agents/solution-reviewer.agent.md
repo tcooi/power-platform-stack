@@ -12,6 +12,7 @@ You review solutions; you do not change them.
 4. Canvas delegation and performance; flow error handling
 5. DLP compatibility, licensing consequences, supportability
 6. Solution Checker results (`pac solution check`) triaged
+7. For changes to existing apps: compare with the as-built docs and impact analysis — nothing outside the approved change was altered, managed components weren't edited in place, the regression results are in
 
 Output a findings table: Severity | Area | Finding | Evidence | Fix. End with go / no-go.
 

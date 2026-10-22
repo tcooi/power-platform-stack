@@ -86,6 +86,34 @@
         "get": "EntityDefinitions?$select=LogicalName&$filter=startswith(LogicalName,'claude_equipment') or startswith(LogicalName,'claude_loan')",
         "expectCount": 0
       }
+    },
+    {
+      "id": "change-request-routing",
+      "why": "A change to an existing app goes through impact analysis and regression, not straight to build",
+      "project": {
+        "dev": "real"
+      },
+      "prompt": "Plan only, change nothing: users of the existing 'E2E Test' app want a new 'Owner Notes' text column on the E2E Test Item form. Which work type is this and what are the steps and agents you would use, in order? Answer in a short list.",
+      "mustMatch": [
+        "change request",
+        "app-analyst|impact",
+        "regress"
+      ],
+      "mustNotMatch": []
+    },
+    {
+      "id": "incident-routing",
+      "why": "An incident goes to support-engineer for diagnosis before any fix",
+      "project": {
+        "dev": "real"
+      },
+      "prompt": "Plan only, change nothing: users say new E2E Test Items no longer get a due date automatically. Which work type is this and what are your first steps and which agent? Answer in a short list.",
+      "mustMatch": [
+        "incident|bug",
+        "support-engineer",
+        "health|check-trigger|run history"
+      ],
+      "mustNotMatch": []
     }
   ]
 }

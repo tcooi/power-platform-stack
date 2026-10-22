@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0 (2026-10-22)
+- Application management: lead decides the work type first (new build, change request, incident, release) with a sequence for each.
+- New `app-analyst` (as-built docs and impact analysis for existing apps) and `support-engineer` (read-only incident diagnosis).
+- Updated: requirements-analyst (change requests and bugs), solution-designer (design deltas, no in-place edits of managed components), pro-code-developer (find source first, keep step registrations in sync), solution-reviewer (change stayed within scope), alm-architect (versioning, hotfix via patch or fast-track), uat-tester (regression suite per app in `tests/<app>/`).
+- Canonical sub-agent rules in `delivery-method/resources/subagent-rules.md`; `validate.py` fails if an agent's copy drifts.
+- Evals: change-request and incident routing.
+
 ## 2.7.0 (2026-10-22)
 - Skills consolidated from 44 to 16; each has a short SKILL.md and on-demand `resources/`.
 - `ppdv state` command and schema checks for `.pp/project.json` and `.pp/state/delivery.json`.

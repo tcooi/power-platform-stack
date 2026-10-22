@@ -27,3 +27,6 @@ Table per persona: check, expected, actual, evidence (JSON output or screenshot 
 ## Detailed guidance (load the file you need)
 - `resources/test-strategy.md` — Define the test strategy: plug-in unit tests, Power Platform Playwright UI tests, flow smoke tests, agent evaluations and UAT. Use when planning quality assurance.
 - `resources/uat-plan.md` — Write the UAT plan with scenarios, test users, entry/exit criteria and defect handling. Use before user acceptance testing.
+
+## Regression suite per app (application management)
+`tests/<app>/permissions.json` (persona → table → expected ops), `automation.json` (create → expected field values), `ui/*.spec.ts` (Playwright). Run all after every change; add the change's acceptance criteria as new cases; report regressions separately.

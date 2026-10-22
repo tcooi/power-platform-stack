@@ -19,8 +19,9 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
           │     then the browser (Playwright MCP, you sign in), then ask you
           │
           └─ delegates non-interactive work to sub-agents (briefs from spawn-templates):
-                requirements-analyst, solution-designer, alm-architect,
-                the-critic, pro-code-developer, solution-reviewer, uat-tester
+                requirements-analyst, solution-designer, alm-architect, the-critic,
+                pro-code-developer, solution-reviewer, uat-tester,
+                app-analyst (existing apps), support-engineer (incidents)
 ```
 
 ## Toolkit, guardrails, evals
@@ -89,7 +90,7 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 
 ## Contents
 
-**Agents**: pp-delivery-lead (main), requirements-analyst, solution-designer, alm-architect, the-critic, pro-code-developer, solution-reviewer, uat-tester.
+**Agents** (10): `pp-delivery-lead` (main; decides the work type: new build, change request, incident, release), and sub-agents `requirements-analyst`, `solution-designer`, `alm-architect`, `the-critic`, `pro-code-developer`, `solution-reviewer`, `uat-tester` (regression suite per app), `app-analyst` (as-built + impact analysis of existing apps), `support-engineer` (incident diagnosis).
 
 **Skills** (16; each `SKILL.md` is short and loads `resources/` on demand):
 - Method and tools: `delivery-method`, `tool-selection-guide`, `ppdv-toolkit`, `browser-automation-fallback`

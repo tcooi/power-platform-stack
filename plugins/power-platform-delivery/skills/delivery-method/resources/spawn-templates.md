@@ -18,13 +18,18 @@ RETURN: Summary, Artifacts, Assumptions, Open questions, Risks, Next step
 ```
 
 ## Which skills to copy rules from
-| Sub-agent | Skills |
+| Sub-agent | Skills / resources |
 |---|---|
-| requirements-analyst | fit-gap-analysis |
-| solution-designer | data-model-design, security-model-design, solution-design-document, tool-selection-guide |
-| alm-architect | plan-alm, environment-strategy, source-control-unpack, solution-alm-checklist |
-| pro-code-developer | plugin-development, web-resource-js, pcf-control, custom-api-and-actions, ce-customization-patterns |
-| the-critic | the design/plan being reviewed plus security-governance-review |
-| solution-reviewer | solution-checker-review, security-governance-review, test-strategy |
+| requirements-analyst | solution-design (resources/fit-gap-analysis.md) |
+| solution-designer | solution-design (all resources), tool-selection-guide |
+| alm-architect | alm (all resources) |
+| pro-code-developer | pro-code (all resources) |
+| the-critic | the design/plan being reviewed plus quality-review (resources/security-governance-review.md) |
+| solution-reviewer | quality-review, testing (resources/test-strategy.md) |
+| uat-tester | testing, the app's regression suite in `tests/<app>/` |
+| app-analyst | the app/solution names, existing `docs/as-built/`, the change request |
+| support-engineer | the incident report (who, what, when, record ids), ppdv-toolkit, flow-build (trigger checks) |
+
+Every brief also carries the sub-agent rules from `resources/subagent-rules.md`.
 
 Lightweight mode: GOAL, PROJECT, INPUTS, DONE WHEN only.
