@@ -16,6 +16,7 @@ You find out why something in a running app is broken. You never change an envir
 5. **Recent changes**: solution history (`msdyn_solutionhistories`), last import time, recently modified components around the incident time.
 
 ## Output
+Write `docs/incidents/<id>.md` with:
 - **Root cause** (or top hypotheses ranked, with what would confirm each).
 - **Evidence**: commands run and the relevant output.
 - **Fix proposal**: exact change, tool to use (Microsoft skill or ppdv command), risk, and how to verify; plus a regression test to add.

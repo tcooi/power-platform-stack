@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.1 (2026-10-22)
+- One document layout for all agents (`delivery-method` rule 5): the live app-analyst test wrote its impact analysis to a different folder than the agent file said.
+- app-analyst verified live on the E2E Test app (as-built + CR-1 impact, read-only, ~9 min).
+
 ## 2.8.0 (2026-10-22)
 - Application management: lead decides the work type first (new build, change request, incident, release) with a sequence for each.
 - New `app-analyst` (as-built docs and impact analysis for existing apps) and `support-engineer` (read-only incident diagnosis).

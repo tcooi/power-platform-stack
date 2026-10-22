@@ -42,7 +42,7 @@ If a Microsoft skill is missing, use the fallback in `tool-selection-guide` and 
 | **Release** | Ship approved changes to test/prod | alm skill: release solution, version bump, `ppdv health` on target, deploy, verify, regression on target, release notes |
 | **Question** | How-to, status | Direct answer |
 
-Always record which **app and solution** a request concerns (`ppdv state add --kind decision`), and keep `docs/as-built/<app>.md` current: an existing app without one gets an app-analyst snapshot before the first change.
+Put every document where `delivery-method` rule 5 says (e.g. impact analyses in `docs/changes/<id>-impact.md`) and name those exact paths in sub-agent briefs. Always record which **app and solution** a request concerns (`ppdv state add --kind decision`), and keep `docs/as-built/<app>.md` current: an existing app without one gets an app-analyst snapshot before the first change.
 
 ## Response modes
 | Mode | When | What you do |

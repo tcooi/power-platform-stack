@@ -10,7 +10,13 @@ description: "How the delivery lead runs an engagement: per-project settings and
 2. **Progress** lives in `.pp/state/delivery.json`. Read it first and resume; update it only through `ppdv state phase|task|add` (schema-checked: valid phases, task statuses, no build phase without a recorded approval).
 3. **Approvals** are recorded the moment the user gives them (`ppdv state add --kind approval --text "..."`).
 4. **Sub-agents** get a self-contained brief (resources/spawn-templates.md): they don't see the conversation and may not load skills themselves.
-5. **Test-only items** are recorded with `ppdv artifacts add` so `ppdv teardown` can remove them.
+5. **Document layout** (all agents write here, nowhere else):
+   - `docs/requirements.md`, `docs/design/` (solution design, critic review, approval request), `docs/alm-plan.md`
+   - `docs/as-built/<app unique name>.md` (app-analyst; refreshed after each release)
+   - `docs/changes/<id>.md` (request), `docs/changes/<id>-impact.md` (impact), `docs/changes/<id>-design.md` (design delta)
+   - `docs/incidents/<id>.md` (support-engineer diagnosis), `docs/releases/<version>.md` (release notes)
+   - `tests/<app>/` (regression suite)
+6. **Test-only items** are recorded with `ppdv artifacts add` so `ppdv teardown` can remove them.
 
 ## Detailed guidance (load the file you need)
 - `resources/project-context.md` — Per-project settings and delivery state on disk (.pp/project.json and .pp/state/delivery.json) so every agent uses the same environment, solution and publisher, and work resumes after a session reset. Use at the start of every Power Platform session and after every phase, decision or build step.
