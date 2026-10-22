@@ -7,6 +7,9 @@ description: "Our standards for building Dataverse schema, security and data, ap
 
 **Microsoft tool**: `dataverse` plugin (`dv-metadata`, `dv-data`, `dv-query`, `dv-solution`, `dv-security`). If it isn't installed, `/app-builder` (model-apps) builds tables, columns, relationships, forms and views from one approved spec; other fallbacks are in `tool-selection-guide`. Details: `dataverse-schema-build`, `sample-data-load`, `security-roles-setup`.
 
+## Verified (TEST-US, 2026-10-22)
+`dv-metadata` built a whole-number column through the Dataverse CLI (`dataverse api request`) with the solution header, read it back and checked solution membership. Microsoft's Python SDK can't set a min/max range on whole-number columns, so ranges go through the Web API route. Dataverse MCP needs the environment's MCP setting and the client allow-list (admin, billed outside Copilot Studio); without it the dv-* skills use the CLI/SDK.
+
 ## Our rules
 - Build from the approved data model (`docs/design/`); no unapproved tables or columns.
 - Reuse standard tables first; every new name uses the publisher prefix.

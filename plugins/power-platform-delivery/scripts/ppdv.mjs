@@ -15,6 +15,7 @@ Writes:   dry run by default; add --apply. Production targets also need --allow-
 
   whoami                                         Who am I, which org
   probe                                          Tools, auth, installed Microsoft plugins and skills
+  health                                         Environment health: background (async) service, stuck system jobs
   guard-check --url <url>                        Is <url> an allowed write target? (used by the hook)
   request <METHOD> <path> [--data <json|@file>] [--solution <name>] [--strong]
   publish [--entities a,b]                       PublishXml for tables, or PublishAllXml
@@ -108,7 +109,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function http(method, url, { body, headers = {}, resource } = {}) {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(url, {
-      method,
+      method, signal: AbortSignal.timeout(Number(process.env.PPDV_TIMEOUT_MS) || 15 * 60000),
       headers: { Authorization: `Bearer ${token(resource)}`, Accept: "application/json", "OData-Version": "4.0", "OData-MaxVersion": "4.0",
         ...(body !== undefined ? { "Content-Type": "application/json; charset=utf-8" } : {}), ...headers },
       body: body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body),
@@ -194,6 +195,16 @@ async function main() {
   if (cmd === "guard-check") {
     const url = norm(opt.url || ENV); const entry = envEntry(url);
     return out({ ok: !!entry && (!isProd(entry) || !!opt["allow-prod"]), env: url, inProject: !!entry, production: isProd(entry), project: projectPath });
+  }
+
+
+  if (cmd === "health") {
+    const cutoff = new Date(Date.now() - 10 * 60000).toISOString();
+    const stuck = (await dvOk("GET", `asyncoperations?$select=name,operationtype,createdon&$filter=statuscode eq 0 and createdon lt ${cutoff}&$orderby=createdon asc&$top=50`)).json.value;
+    const recentDone = (await dvOk("GET", `asyncoperations?$select=asyncoperationid&$filter=statuscode eq 30 and completedon gt ${new Date(Date.now() - 24 * 3600000).toISOString()}&$top=1`)).json.value.length;
+    const issues = [];
+    if (stuck.length) issues.push(`${stuck.length}${stuck.length === 50 ? "+" : ""} system jobs waiting more than 10 minutes (oldest ${stuck[0].createdon}); the background service may be off. Dataverse-triggered flows, async plug-ins and async imports won't run.`);
+    return out({ ok: !issues.length, env: ENV, stuckJobs: stuck.length, completedJobsLast24h: recentDone > 0, oldestStuck: stuck.slice(0, 5).map((j) => ({ name: j.name, type: j.operationtype, created: j.createdon })), issues });
   }
 
   if (cmd === "whoami") {
@@ -399,12 +410,18 @@ async function main() {
     guardWrite(ENV, todo.map((x) => `delete ${x.type} ${x.name || x.id}`));
     const results = [];
     for (const x of todo) {
-      const r = await deleteArtifact(x);
+      let r;
+      try { r = await deleteArtifact(x); }
+      catch (e) { // long operations (managed solution uninstall) can outlive the connection: re-check
+        await sleep(30000);
+        const still = await stillExists(x);
+        r = still ? { ok: false, json: { error: { message: `${e.message}; item still exists` } } } : { ok: true };
+      }
       const gone = r.ok || r.status === 404;
       if (gone) x.removed = new Date().toISOString();
       results.push({ type: x.type, id: x.id, name: x.name, deleted: gone, error: gone ? undefined : r.json?.error?.message?.slice(0, 200) });
+      saveArtifacts(a); // keep progress even if a later item fails
     }
-    saveArtifacts(a);
     return out({ ok: results.every((r) => r.deleted), results }, results.every((r) => r.deleted) ? 0 : 1);
   }
 
@@ -420,11 +437,23 @@ function artifactsPath() {
 }
 function loadArtifacts() { const p = artifactsPath(); return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : { artifacts: [] }; }
 function saveArtifacts(a) { writeFileSync(artifactsPath(), JSON.stringify(a, null, 2) + "\n"); }
+async function stillExists(a) {
+  const q = {
+    row: async () => { const m = await dv("GET", `EntityDefinitions(LogicalName='${a.table}')?$select=EntitySetName`); return m.status === 404 ? { ok: false } : dv("GET", `${m.json.EntitySetName}(${a.id})`); },
+    flow: () => dv("GET", `workflows(${a.id})?$select=name`), connectionreference: () => dv("GET", `connectionreferences(${a.id})`),
+    bot: () => dv("GET", `bots(${a.id})?$select=name`), role: () => dv("GET", `roles(${a.id})?$select=name`), appmodule: () => dv("GET", `appmodules(${a.id})?$select=name`),
+    webresource: () => dv("GET", `webresourceset(${a.id})?$select=name`), column: () => dv("GET", `EntityDefinitions(LogicalName='${a.table}')/Attributes(LogicalName='${a.id}')`),
+    table: () => dv("GET", `EntityDefinitions(LogicalName='${a.id}')?$select=LogicalName`),
+    solution: async () => { const r = await dv("GET", `solutions?$select=solutionid&$filter=uniquename eq '${a.id}'`); return { ok: r.ok && r.json.value.length > 0 }; },
+  }[a.type];
+  try { return q ? (await q()).ok : true; } catch { return true; }
+}
 async function deleteArtifact(a) {
   switch (a.type) {
     case "row": {
-      const md = (await dvOk("GET", `EntityDefinitions(LogicalName='${a.table}')?$select=EntitySetName`)).json;
-      return dv("DELETE", `${md.EntitySetName}(${a.id})`);
+      const m = await dv("GET", `EntityDefinitions(LogicalName='${a.table}')?$select=EntitySetName`);
+      if (m.status === 404) return { ok: true, status: 404 }; // table already gone, so is the row
+      return dv("DELETE", `${m.json.EntitySetName}(${a.id})`);
     }
     case "flow":
       await dv("PATCH", `workflows(${a.id})`, { body: { statecode: 0, statuscode: 1 }, headers: { "If-Match": "*" } });

@@ -21,6 +21,7 @@ Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is 
 | Need | Command |
 |---|---|
 | Tools, auth, which Microsoft plugins/skills are installed | `probe` |
+| Is the environment healthy (background service, stuck system jobs)? | `health` |
 | Who/where am I | `whoami` |
 | Any Web API call (fallback) | `request <METHOD> <path> [--data <json or @file>] [--solution <name>] [--strong]` |
 | Is it in the solution / add it | `solution has --solution S --id G` · `solution add --solution S --id G --type N` · `solution components --solution S` |
@@ -37,5 +38,6 @@ Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is 
 **Verified live in TEST-US (2026-10-22):** probe, whoami, guard refusal, role add/remove/assign/unassign/members, solution has, flow state/disable/enable/check-trigger/fix-trigger, choice default, view sort (fixed the app-builder sort gap; Microsoft's verifier then passed 19/19), test as-user (persona role: create/read/update allowed, delete and read-others denied).
 
 **Facts learned with it**
-- `DefaultFormValue` does not apply to rows created through the Web API: use a flow, plug-in or business rule for API/import creates.
+- `DefaultFormValue` behaved differently per environment (set afterwards: API creates stayed empty; imported with the column: API creates got it). Test it; don't rely on it.
+- `health` found an environment whose background service had been stuck for two days (Dataverse-triggered flows never ran there). Run it in preflight and before deploying.
 - Turning a flow on by PATCHing `workflow.statecode` does not register its Dataverse trigger; `flow enable` (flow service) does.

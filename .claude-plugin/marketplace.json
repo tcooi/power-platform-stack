@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Power Platform & Dynamics 365 CE consultant plugins for Claude Code and GitHub Copilot",
-    "version": "2.5.0"
+    "version": "2.6.0"
   },
   "plugins": [
     {
       "name": "power-platform-delivery",
       "source": "./plugins/power-platform-delivery",
       "description": "Consultant delivery method for Power Platform and Dynamics 365 CE: delivery lead, design/critic/review sub-agents, and standards skills that work alongside Microsoft's official Power Platform and Dataverse plugins.",
-      "version": "2.5.0",
+      "version": "2.6.0",
       "keywords": [
         "power-platform",
         "dynamics-365",
