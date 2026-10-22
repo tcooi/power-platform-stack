@@ -1,6 +1,6 @@
 {
   "name": "power-platform-delivery",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Consultant delivery method for Power Platform and Dynamics 365 CE: delivery lead, design/critic/review sub-agents, and standards skills that work alongside Microsoft's official Power Platform and Dataverse plugins.",
   "author": {
     "name": "tcooi"

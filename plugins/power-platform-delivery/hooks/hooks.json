@@ -2,9 +2,12 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|mcp__.*",
         "hooks": [
-          { "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run-guard-hook.sh\"" }
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/run-guard-hook.sh\""
+          }
         ]
       }
     ]
