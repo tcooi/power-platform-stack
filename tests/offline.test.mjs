@@ -101,3 +101,25 @@ test("manifests: plugin and marketplace versions match", () => {
   const pj = JSON.parse(readFileSync(join(plugin, ".claude-plugin", "plugin.json"), "utf8"));
   assert.equal(mk.plugins[0].version, pj.version);
 });
+
+test("ppdv state: valid project passes, bad prefix and secrets fail", () => {
+  const d = project(DEV);
+  writeFileSync(join(d, ".pp", "project.json"), JSON.stringify({ environments: DEV, solution: { uniqueName: "Sol", prefix: "con" } }));
+  assert.equal(ppdvRun(d, ["state", "check"]).json.ok, true);
+  writeFileSync(join(d, ".pp", "project.json"), JSON.stringify({ environments: DEV, solution: { uniqueName: "Sol", prefix: "Con_X" }, clientSecret: "x" }));
+  const r = ppdvRun(d, ["state", "check"]);
+  assert.equal(r.json.ok, false); assert.equal(r.json.errors.length, 2);
+});
+test("ppdv state: tasks, phases and entries are validated", () => {
+  const d = project(DEV);
+  writeFileSync(join(d, ".pp", "project.json"), JSON.stringify({ environments: DEV, solution: { uniqueName: "Sol", prefix: "con" } }));
+  assert.equal(ppdvRun(d, ["state", "task", "--id", "T1", "--title", "Design", "--status", "in-progress"]).json.ok, true);
+  assert.equal(ppdvRun(d, ["state", "task", "--id", "T1", "--status", "finished"]).code, 1);
+  assert.equal(ppdvRun(d, ["state", "phase", "--set", "build"]).code, 1, "build without approvals is refused");
+  assert.equal(ppdvRun(d, ["state", "add", "--kind", "approval", "--text", "design v1"]).json.ok, true);
+  assert.equal(ppdvRun(d, ["state", "phase", "--set", "build"]).json.ok, true);
+  assert.equal(ppdvRun(d, ["state", "task", "--id", "T1", "--status", "done"]).json.ok, true);
+  const s = JSON.parse(readFileSync(join(d, ".pp", "state", "delivery.json"), "utf8"));
+  assert.equal(s.tasks[0].status, "done"); assert.equal(s.phase, "build");
+  assert.equal(ppdvRun(d, ["state", "check"]).json.ok, true);
+});

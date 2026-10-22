@@ -42,7 +42,7 @@ Install all Power Platform plugins: `/plugin marketplace add microsoft/power-pla
 | Forms, views, sitemap, app module, BPF, business rules | `/app-builder` (model-apps) or `dv-metadata` for forms/views; `pac model create --solution <name>` | `pac model create` without `--solution` (defaults to Default) |
 | Bulk data / migration | `dv-data` → `CreateMultiple`/`UpdateMultiple`/`UpsertMultiple`, `$batch` (≤1,000 ops) | One request per row; MCP for volume |
 | Ad hoc query | Dataverse MCP `read_query` / `dv-query` | Exporting to Excel by hand |
-| Security roles: create, edit privileges, assign | `security-roles-setup` matrix: `/app-builder` `personas[]` / `roleGrants[]`, Web API (`AddPrivilegesRole`, `ReplacePrivilegesRole`, `RemovePrivilegeRole`), `pac admin assign-user` / `assign-group`, `dv-security` | Editing roles in PROD; roles authored only by clicking |
+| Security roles: create, edit privileges, assign | `security-roles` matrix: `/app-builder` `personas[]` / `roleGrants[]`, Web API (`AddPrivilegesRole`, `ReplacePrivilegesRole`, `RemovePrivilegeRole`), `pac admin assign-user` / `assign-group`, `dv-security` | Editing roles in PROD; roles authored only by clicking |
 | Choice column default | Web API `DefaultFormValue` | Hand-edited solution XML |
 | Solution export/import/pack/check | `dv-solution` or `pac solution …` | Opening zips with standard tools |
 | Source control | Dataverse Git integration (dev environments; managed environments required) or `pac solution clone`/`export`+`unpack` | `pac canvas pack/unpack` (deprecated) |
@@ -53,7 +53,7 @@ Install all Power Platform plugins: `/plugin marketplace add microsoft/power-pla
 | PCF | `pcf` plugin or `pac pcf init -fw react` → solution project | Shipping the temporary `PowerAppsTools_<prefix>` solution |
 | Copilot Studio agents | `pac copilot clone/pull/push/pack` or the Copilot Studio VS Code extension | Pushing without pulling first |
 | Permission tests | `ppdv test as-user` per persona | Assuming roles work because the build passed |
-| UI tests | Power Platform Playwright samples / Playwright MCP (`user-acceptance-test`) | Test Engine / `pac test` (deprecated April 2026) |
+| UI tests | Power Platform Playwright samples / Playwright MCP (`testing`) | Test Engine / `pac test` (deprecated April 2026) |
 | Designer-only actions | `browser-automation-fallback` (approval per action, user signs in) | Asking the user to click when the browser can do it |
 | Docs and syntax | Microsoft Learn MCP (bundled) | Answering from memory |
 

@@ -27,7 +27,7 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
 
 - **`scripts/ppdv.mjs`** (skill `ppdv-toolkit`): tested commands for what Microsoft's plugins don't cover — Web API with auth/retry/solution header, solution membership, publish, role privileges and assignment, flow on/off through the flow service with trigger checks, choice defaults, view sort, **permission tests as a real user** (`test as-user`), and a tooling `probe`. Writes are dry runs until `--apply`, and only target environments in `.pp/project.json` (production needs `--allow-prod`). Plain Node 18+, no dependencies, works the same from Claude Code and Copilot.
 - **Guardrail hook**: denies shell writes to Dataverse environments not in `.pp/project.json` and asks before production writes. Claude Code reads `hooks/hooks.json`; Copilot CLI gets `hooks.json` in its own format. A wrapper (`scripts/run-guard-hook.sh`) finds the script in either install and never blocks when it can't (a crashing hook in Copilot would deny every call). ppdv's own guard applies in both tools regardless.
-- **Testing like a user**: `uat-tester` sub-agent and `user-acceptance-test` skill (permissions per persona, automation checks, Playwright UI journeys). **Browser fallback** (`browser-automation-fallback`) for designer-only actions, with approval per action; you sign in, agents never type passwords.
+- **Testing like a user**: `uat-tester` sub-agent and `testing` skill (permissions per persona, automation checks, Playwright UI journeys). **Browser fallback** (`browser-automation-fallback`) for designer-only actions, with approval per action; you sign in, agents never type passwords.
 - **Tests**: `node --test tests/offline.test.mjs` (19 offline tests: hook decisions, toolkit guard, dry runs, manifests; also run by GitHub Actions on every push) and `sh tests/live.sh` (live smoke test against a TEST environment from a project folder).
 - **Cleanup**: record anything a test creates with `ppdv artifacts add`, remove it with `ppdv teardown --apply`.
 - **Evals**: `node evals/run.mjs` runs scenarios headless against the lead with the plugin loaded (`claude -p --plugin-dir`) and checks both the answer and the environment. Results in `evals/last-run.json`. `--all` adds the slow Full-mode scenario (lead + 4 sub-agents + critic loop, ~10 min, ~$7 per run), which passed on 2026-10-22.
@@ -35,6 +35,8 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
 Why this split: Microsoft's build skills ask you questions and wait for approval, and sub-agents can't talk to you (and in Copilot don't inherit skills). So building runs in the main session where every installed skill is available; sub-agents get everything they need written into their brief and return assumptions and open questions.
 
 Project settings and progress live in the client repo: `.pp/project.json` (environments, solution, publisher prefix) and `.pp/state/delivery.json` (phase, approvals, decisions, tasks). Sessions resume from them.
+
+See also [docs/quickstart.md](docs/quickstart.md) and [CHANGELOG.md](CHANGELOG.md).
 
 ## Install
 
@@ -89,14 +91,12 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 
 **Agents**: pp-delivery-lead (main), requirements-analyst, solution-designer, alm-architect, the-critic, pro-code-developer, solution-reviewer, uat-tester.
 
-**Skills**:
-- Method: project-context, spawn-templates, tool-selection-guide, ppdv-toolkit, browser-automation-fallback
-- Discovery and design: fit-gap-analysis, data-model-design, security-model-design, solution-design-document
-- Build standards: dataverse-, model-driven-, canvas-, flow-, copilot-studio-build-standards
-- Build details: dataverse-schema-build, sample-data-load, security-roles-setup, app-modules-forms-views, command-bar-power-fx, business-rules-and-bpf, canvas-performance-delegation, canvas-component-library, flow-error-handling-pattern, flow-dataverse-triggers, agent-instructions-design, agent-evaluation-plan
-- Pro-code: ce-customization-patterns, plugin-development, web-resource-js, pcf-control, custom-api-and-actions
-- ALM: plan-alm, environment-strategy, source-control-unpack, solution-alm-checklist, github-actions-pipeline, azure-devops-pipeline
-- Quality and release: user-acceptance-test, solution-checker-review, security-governance-review, test-strategy, uat-plan, go-live-checklist, handover-documentation
+**Skills** (16; each `SKILL.md` is short and loads `resources/` on demand):
+- Method and tools: `delivery-method`, `tool-selection-guide`, `ppdv-toolkit`, `browser-automation-fallback`
+- Design: `solution-design` (fit-gap, data model, security model, design document)
+- Build standards (used with Microsoft's skills): `dataverse-build`, `security-roles`, `model-driven-build`, `canvas-build`, `flow-build`, `copilot-studio-build`, `pro-code`
+- ALM: `alm` (plan, environments, source control, release solutions, deployment settings, pipelines)
+- Quality and release: `quality-review`, `testing`, `release-and-handover`
 
 Microsoft Learn MCP is bundled (`.mcp.json`).
 

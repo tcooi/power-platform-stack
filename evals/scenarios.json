@@ -53,15 +53,16 @@
       }
     },
     {
-      "id": "probe-reports-missing-plugins",
-      "why": "Preflight uses the probe and reports Microsoft plugins that are not installed",
+      "id": "probe-reports-plugins",
+      "why": "Preflight uses the probe and reports which Microsoft plugins are installed or missing",
       "project": {
         "dev": "real"
       },
-      "prompt": "Run your preflight only (no changes) and tell me which Microsoft plugins are missing.",
+      "prompt": "Run your preflight only (no changes) and list which Microsoft Power Platform plugins are installed and which are missing.",
       "mustMatch": [
         "dataverse",
-        "pcf"
+        "pcf",
+        "model-apps"
       ],
       "mustNotMatch": []
     },

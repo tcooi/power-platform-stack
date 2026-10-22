@@ -4,7 +4,7 @@
 // Every write is a dry run unless --apply is passed, and is refused when the target environment
 // is not in .pp/project.json (or is marked production without --allow-prod).
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 
@@ -32,8 +32,13 @@ Writes:   dry run by default; add --apply. Production targets also need --allow-
   choice default --table <logical> --column <logical> --value <int> [--solution <name>]
   view sort --view <name|guid> --table <logical> --attr <col> [--desc] [--replace]
   test as-user --user <upn|guid> --table <logical> [--ops create,read,update,delete,read-others]
-  artifacts add --type <row|flow|bot|role|appmodule|webresource|connectionreference|column|table|solution> --id <guid|logicalname> [--table <logical>] [--name <text>]
+  artifacts add --type <row|flow|bot|role|appmodule|pcf|webresource|connectionreference|column|table|solution> --id <guid|logicalname> [--table <logical>] [--name <text>]
   artifacts list                                 Test artifacts recorded in .pp/test-artifacts.json
+  state check                                    Validate .pp/project.json and .pp/state/delivery.json
+  state show                                     Phase, open tasks, pending approvals
+  state phase --set <discover|design|alm-plan|build|review|test|release|handover>
+  state task --id <T1> [--title <t>] --status <todo|in-progress|waiting|done|blocked>
+  state add --kind <approval|decision|risk|lesson|artifact|question> --text <text>
   teardown                                       Delete recorded test artifacts in dependency order (dry run; --apply)
 `;
 
@@ -73,7 +78,11 @@ function envEntry(url) {
   return null;
 }
 function targetEnv() {
-  if (opt.env) return { url: norm(opt.env), entry: envEntry(opt.env) };
+  if (opt.env && project?.environments?.[opt.env]) opt.target = opt.env; // --env <key> means --target <key>
+  else if (opt.env) {
+    if (!/^https?:\/\//i.test(opt.env)) fail(`--env '${opt.env}' is neither a URL nor an environment key in ${projectPath || ".pp/project.json"}`);
+    return { url: norm(opt.env), entry: envEntry(opt.env) };
+  }
   if (project?.environments) {
     const key = opt.target || Object.keys(project.environments)[0];
     const e = project.environments[key];
@@ -190,6 +199,7 @@ async function main() {
   if (!cmd || opt.help) { process.stdout.write(HELP); return; }
 
   if (cmd === "probe") return probe();
+  if (cmd === "state") return stateCmd(sub);
   const t = targetEnv(); ENV = "https://" + t.url.replace(/^https?:\/\//, "");
 
   if (cmd === "guard-check") {
@@ -429,8 +439,43 @@ async function main() {
 }
 
 
+
+// ---------------------------------------------------------------- project state (schema-checked updates)
+const PHASES = ["discover", "design", "alm-plan", "build", "review", "test", "release", "handover"];
+const TASK_STATUS = ["todo", "in-progress", "waiting", "done", "blocked"];
+const KINDS = { approval: "approvals", decision: "decisions", risk: "risks", lesson: "lessons", artifact: "artifacts", question: "openQuestions" };
+function statePath() { if (!projectPath) fail("no .pp/project.json (skill delivery-method)"); return join(dirname(projectPath), "state", "delivery.json"); }
+function loadState() { const p = statePath(); return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : { phase: "discover", approvals: [], decisions: [], tasks: [], artifacts: [], openQuestions: [], risks: [], lessons: [] }; }
+function saveState(s) { const p = statePath(); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p + ".tmp", JSON.stringify(s, null, 2) + "\n"); renameSync(p + ".tmp", p); }
+function checkProject(pj) {
+  const e = [];
+  if (!pj.environments || !Object.keys(pj.environments).length) e.push("project.environments is empty");
+  for (const [k, v] of Object.entries(pj.environments || {})) {
+    if (!/^https:\/\/[a-z0-9-]+\.(api\.)?crm\d*\.dynamics\.com\/?$/i.test(v.url || "")) e.push(`environments.${k}.url is not a Dataverse URL`);
+    if (v.id && !isGuid(v.id)) e.push(`environments.${k}.id is not a GUID`);
+  }
+  const s = pj.solution || {};
+  if (!s.uniqueName) e.push("solution.uniqueName missing");
+  if (s.prefix && !/^[a-z][a-z0-9]{1,7}$/.test(s.prefix)) e.push("solution.prefix must be 2-8 lowercase letters/digits starting with a letter");
+  if (JSON.stringify(pj).match(/secret|password|clientsecret/i)) e.push("project.json must not contain secrets");
+  return e;
+}
+function checkState(st) {
+  const e = [];
+  if (!PHASES.includes(st.phase)) e.push(`phase '${st.phase}' is not one of ${PHASES.join("|")}`);
+  for (const k of ["approvals", "decisions", "tasks", "artifacts", "openQuestions", "risks", "lessons"]) if (st[k] && !Array.isArray(st[k])) e.push(`${k} must be an array`);
+  const ids = new Set();
+  for (const t of st.tasks || []) {
+    if (!t.id) e.push(`task without id: ${t.title}`); else if (ids.has(t.id)) e.push(`duplicate task id ${t.id}`); else ids.add(t.id);
+    if (!TASK_STATUS.includes(t.status)) e.push(`task ${t.id} status '${t.status}' is not one of ${TASK_STATUS.join("|")}`);
+  }
+  const phaseIdx = PHASES.indexOf(st.phase);
+  if (phaseIdx > PHASES.indexOf("design") && !(st.approvals || []).length) e.push(`phase is '${st.phase}' but no approvals are recorded`);
+  return e;
+}
+
 // ---------------------------------------------------------------- test artifacts (tagged for teardown)
-const ORDER = ["row", "flow", "connectionreference", "bot", "role", "appmodule", "webresource", "column", "table", "solution"];
+const ORDER = ["row", "flow", "connectionreference", "bot", "role", "appmodule", "pcf", "webresource", "column", "table", "solution"];
 function artifactsPath() {
   if (!projectPath) fail("artifacts need a .pp/project.json (skill project-context)");
   return join(dirname(projectPath), "test-artifacts.json");
@@ -441,7 +486,7 @@ async function stillExists(a) {
   const q = {
     row: async () => { const m = await dv("GET", `EntityDefinitions(LogicalName='${a.table}')?$select=EntitySetName`); return m.status === 404 ? { ok: false } : dv("GET", `${m.json.EntitySetName}(${a.id})`); },
     flow: () => dv("GET", `workflows(${a.id})?$select=name`), connectionreference: () => dv("GET", `connectionreferences(${a.id})`),
-    bot: () => dv("GET", `bots(${a.id})?$select=name`), role: () => dv("GET", `roles(${a.id})?$select=name`), appmodule: () => dv("GET", `appmodules(${a.id})?$select=name`),
+    bot: () => dv("GET", `bots(${a.id})?$select=name`), pcf: () => dv("GET", `customcontrols(${a.id})?$select=name`), role: () => dv("GET", `roles(${a.id})?$select=name`), appmodule: () => dv("GET", `appmodules(${a.id})?$select=name`),
     webresource: () => dv("GET", `webresourceset(${a.id})?$select=name`), column: () => dv("GET", `EntityDefinitions(LogicalName='${a.table}')/Attributes(LogicalName='${a.id}')`),
     table: () => dv("GET", `EntityDefinitions(LogicalName='${a.id}')?$select=LogicalName`),
     solution: async () => { const r = await dv("GET", `solutions?$select=solutionid&$filter=uniquename eq '${a.id}'`); return { ok: r.ok && r.json.value.length > 0 }; },
@@ -462,6 +507,7 @@ async function deleteArtifact(a) {
     case "bot": return dv("DELETE", `bots(${a.id})`);
     case "role": return dv("DELETE", `roles(${a.id})`);
     case "appmodule": return dv("DELETE", `appmodules(${a.id})`);
+    case "pcf": return dv("DELETE", `customcontrols(${a.id})`);
     case "webresource": return dv("DELETE", `webresourceset(${a.id})`);
     case "column": return dv("DELETE", `EntityDefinitions(LogicalName='${a.table}')/Attributes(LogicalName='${a.id}')`);
     case "table": return dv("DELETE", `EntityDefinitions(LogicalName='${a.id}')`);
@@ -472,6 +518,31 @@ async function deleteArtifact(a) {
     default: return { ok: false, status: 0, json: { error: { message: `unknown type ${a.type}` } } };
   }
 }
+
+async function stateCmd(sub) {
+    if (sub === "check") {
+      const errs = [...checkProject(project || {}).map((x) => "project: " + x)];
+      const st = existsSync(statePath()) ? JSON.parse(readFileSync(statePath(), "utf8")) : null;
+      if (st) errs.push(...checkState(st).map((x) => "state: " + x));
+      return out({ ok: !errs.length, project: projectPath, state: st ? statePath() : null, errors: errs }, errs.length ? 1 : 0);
+    }
+    const st = loadState();
+    if (sub === "show") return out({ ok: true, phase: st.phase, openTasks: (st.tasks || []).filter((t) => t.status !== "done"), waitingApprovals: (st.tasks || []).filter((t) => t.status === "waiting"), openQuestions: st.openQuestions || [] });
+    if (sub === "phase") { if (!PHASES.includes(opt.set)) fail(`--set must be ${PHASES.join("|")}`); st.phase = opt.set; }
+    else if (sub === "task") {
+      if (!opt.id || !TASK_STATUS.includes(opt.status)) fail(`--id and --status (${TASK_STATUS.join("|")}) required`);
+      let t = (st.tasks ||= []).find((x) => x.id === opt.id);
+      if (!t) { if (!opt.title) fail("new task needs --title"); t = { id: opt.id, title: opt.title }; st.tasks.push(t); }
+      if (opt.title) t.title = opt.title; t.status = opt.status; t.updated = new Date().toISOString();
+    } else if (sub === "add") {
+      const key = KINDS[opt.kind]; if (!key || !opt.text) fail(`--kind (${Object.keys(KINDS).join("|")}) and --text required`);
+      (st[key] ||= []).push(opt.kind === "approval" ? { item: opt.text, by: "user", date: new Date().toISOString().slice(0, 10) } : opt.kind === "decision" ? { decision: opt.text, date: new Date().toISOString().slice(0, 10) } : opt.text);
+    } else fail("state check|show|phase|task|add");
+    const errs = checkState(st);
+    if (errs.length) fail("state would be invalid", { errors: errs });
+    saveState(st);
+    return out({ ok: true, phase: st.phase, tasks: st.tasks?.length || 0 });
+  }
 
 async function checkTrigger(id) {
   const wf = await workflow(id);
