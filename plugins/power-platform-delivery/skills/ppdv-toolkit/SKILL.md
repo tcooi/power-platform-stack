@@ -23,7 +23,8 @@ Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is 
 | Tools, auth, which Microsoft plugins/skills are installed | `probe` |
 | Is the environment healthy (background service, stuck system jobs)? | `health` |
 | Who/where am I | `whoami` |
-| Any Web API call (fallback) | `request <METHOD> <path> [--data <json or @file>] [--solution <name>] [--strong]` |
+| After every build step | `verify --solution S --since <start>`: new/changed components (yours only) in the solution, publisher prefix, flow triggers; health as warning; exit 1 on findings |
+| Any Web API call (last resort) | `request <METHOD> <path> [--data …] [--solution S] [--strong]`; writes need `--reason "why no Microsoft skill or named command fits"`, are logged to `.pp/state/api-writes.jsonl`, record PATCH/PUT are read back; the hook asks the user first |
 | Is it in the solution / add it | `solution has --solution S --id G` · `solution add --solution S --id G --type N` · `solution components --solution S` |
 | Publish | `publish [--entities a,b]` |
 | Role privileges | `role get` · `role add --privilege prvX --depth Basic|Local|Deep|Global` · `role remove --privilege prvX` (all `--role <name or id>`) |

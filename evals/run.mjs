@@ -21,7 +21,7 @@ for (const s of scenarios.filter((x) => (only.length ? only.includes(x.id) : all
   writeFileSync(join(dir, ".pp", "project.json"), JSON.stringify({ client: "eval", environments: envs, solution: { uniqueName: "ClaudeTestSolution", publisher: "ClaudePublisher", prefix: "claude" } }, null, 2));
   const t0 = Date.now();
   const r = spawnSync("claude", ["-p", s.prompt, "--plugin-dir", plugin, "--agent", "power-platform-delivery:pp-delivery-lead", "--output-format", "json",
-    "--allowedTools", "Read", "Glob", "Grep", "Skill", "Agent", "Task", "Write", "Edit", "Bash(mkdir:*)", "Bash(ls:*)", "Bash(node:*)", "Bash(pac org who)", "Bash(pac auth list)", "Bash(az account show:*)", "Bash(dotnet --list-sdks)"],
+    "--allowedTools", "Read", "Glob", "Grep", "Skill", "Agent", "Task", "Write", "Edit", "Bash(mkdir:*)", "Bash(ls:*)", "Bash(node:*)", "Bash(dataverse:*)", "Bash(python:*)", "Bash(python3:*)", "Bash(pac org who)", "Bash(pac auth list)", "Bash(az account show:*)", "Bash(dotnet --list-sdks)"],
     { cwd: dir, encoding: "utf8", timeout: 600000, maxBuffer: 50e6 });
   let text = ""; try { text = JSON.parse(r.stdout).result || ""; } catch { text = r.stdout || r.stderr || ""; }
   const failures = [];

@@ -58,6 +58,9 @@ process.stdin.on("data", (c) => (input += c)).on("end", () => {
   }
   const isPacWrite = /\bpac\s+(solution\s+(import|delete|publish|upgrade|add-solution-component|online-version|sync)|admin\s+(create|delete|assign-user|assign-group|create-service-principal|copy|reset|backup|restore)|copilot\s+(push|publish|delete|init)|pcf\s+push|plugin\s+push|model\s+(create|genpage\s+(upload|add|remove))|pipeline\s+deploy|data\s+import|canvas\s+create|pages\s+upload|connection\s+(create|delete|update))\b/i.test(cmd);
   if (isPacWrite) pacCheck(cmd);
+  // raw API writes through the toolkit bypass Microsoft's validation: always ask
+  if (/ppdv\.mjs["']?\s+request\s+(POST|PATCH|PUT|DELETE)\b/i.test(cmd) && /--apply\b/.test(cmd) && findProject(globalThis.__cwd))
+    emit("ask", "power-platform-delivery guard: raw Web API write through `ppdv request` (bypasses Microsoft's validation). Confirm the user approved this exact change; prefer a Microsoft skill or a named ppdv command.");
   const isWrite =
     /\bcurl\b[\s\S]*(-X\s*(POST|PATCH|PUT|DELETE)|--request\s+(POST|PATCH|PUT|DELETE)|\s-d\s|--data)/i.test(cmd) ||
     /\b(Invoke-RestMethod|Invoke-WebRequest)\b[\s\S]*-Method\s+(Post|Patch|Put|Delete)/i.test(cmd) ||

@@ -114,6 +114,24 @@
         "health|check-trigger|run history"
       ],
       "mustNotMatch": []
+    },
+    {
+      "id": "build-then-verify",
+      "slow": true,
+      "why": "An approved Lightweight build ends with ppdv verify before it is reported done (~3 min)",
+      "project": {
+        "dev": "real"
+      },
+      "prompt": "Approved change, nothing else: add a Yes/No column 'Eval Flag' (claude_evalflag, default No) to table claude_e2etestitem in solution ClaudeTestSolution in the dev environment. Use the right tool per our standards, record it as a test artifact, and report the result including your post-build verification.",
+      "mustMatch": [
+        "verif",
+        "claude_evalflag"
+      ],
+      "mustNotMatch": [],
+      "verify": {
+        "get": "EntityDefinitions(LogicalName='claude_e2etestitem')/Attributes?$select=LogicalName&$filter=LogicalName eq 'claude_evalflag'",
+        "expectCount": 1
+      }
     }
   ]
 }
