@@ -147,3 +147,33 @@ test("ppdv: large output is not truncated when piped", () => {
   const r = spawnSync("node", [ppdv, "--help"], { encoding: "utf8" });
   assert.match(r.stdout, /verify --solution/);
 });
+
+function fakeHome(versions) {
+  const h = mkdtempSync(join(tmpdir(), "pphome-"));
+  mkdirSync(join(h, ".claude", "plugins"), { recursive: true });
+  const plugins = Object.fromEntries(Object.entries(versions).map(([n, v]) => [`${n}@x`, [{ version: v, installPath: join(h, n) }]]));
+  writeFileSync(join(h, ".claude", "plugins", "installed_plugins.json"), JSON.stringify({ version: 2, plugins }));
+  return h;
+}
+const fb = (args, home) => {
+  const r = spawnSync("node", [ppdv, "fallbacks", ...args], { encoding: "utf8", cwd: tmpdir(), env: { ...process.env, HOME: home, PATH: dirname(process.execPath) + ":/usr/bin:/bin" } });
+  return JSON.parse(r.stdout);
+};
+test("ppdv fallbacks: an updated Microsoft plugin makes its entries unverified", () => {
+  const d = fb(["status"], fakeHome({ "model-apps": "99.0.0", dataverse: "1.14.0" }));
+  assert.ok(d.unverified.includes("mda-header-fields"));
+  assert.ok(!d.unverified.includes("dv-int-range"));
+  assert.equal(d.plugins["model-apps"].state, "updated since check");
+});
+test("ppdv fallbacks: an older plugin asks for an update, not a review", () => {
+  const d = fb(["status"], fakeHome({ "model-apps": "1.0.0" }));
+  assert.equal(d.plugins["model-apps"].state, "older than checked");
+  assert.equal(d.unverified.length, 0);
+});
+test("ppdv fallbacks: mark and retire are dry runs until --apply", () => {
+  const before = readFileSync(join(plugin, "fallbacks.json"), "utf8");
+  const m = fb(["mark", "--plugin", "model-apps", "--version", "9.9.9"], fakeHome({}));
+  const r = fb(["retire", "--id", "mda-header-fields", "--in", "model-apps 9.9.9"], fakeHome({}));
+  assert.ok(m.dryRun && r.dryRun);
+  assert.equal(readFileSync(join(plugin, "fallbacks.json"), "utf8"), before);
+});

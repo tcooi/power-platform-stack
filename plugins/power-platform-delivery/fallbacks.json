@@ -1,0 +1,336 @@
+{
+  "about": "Every place where we work around or override a Microsoft plugin or tool, and the version it was last checked against. When the installed or latest version is newer, `ppdv fallbacks status|outdated` flag the entries and `ppdv fallbacks review --plugin <p>` shows what changed. Only change this file through a review (ppdv fallbacks mark|retire).",
+  "sources": {
+    "model-apps": {
+      "repo": "microsoft/power-platform-skills",
+      "path": "plugins/model-apps",
+      "installed": [
+        "model-apps"
+      ]
+    },
+    "canvas-apps": {
+      "repo": "microsoft/power-platform-skills",
+      "path": "plugins/canvas-apps",
+      "installed": [
+        "canvas-apps"
+      ]
+    },
+    "power-automate": {
+      "repo": "microsoft/power-platform-skills",
+      "path": "plugins/power-automate",
+      "installed": [
+        "power-automate"
+      ]
+    },
+    "pcf": {
+      "repo": "microsoft/power-platform-skills",
+      "path": "plugins/pcf",
+      "installed": [
+        "pcf"
+      ]
+    },
+    "dataverse": {
+      "repo": "microsoft/Dataverse-skills",
+      "path": ".github/plugins/dataverse",
+      "installed": [
+        "dataverse"
+      ]
+    },
+    "pac": {
+      "nuget": "Microsoft.PowerApps.CLI.Tool"
+    }
+  },
+  "entries": [
+    {
+      "id": "mda-header-fields",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "gap",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder can't put fields in the form header",
+      "use": "form designer via browser-automation-fallback or the user",
+      "keywords": [
+        "header field",
+        "form header",
+        "headerFields"
+      ]
+    },
+    {
+      "id": "mda-choice-default",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "gap",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder can't set a Choice column's default value",
+      "use": "ppdv choice default",
+      "keywords": [
+        "choice default",
+        "DefaultFormValue",
+        "defaultOption",
+        "default option"
+      ]
+    },
+    {
+      "id": "mda-view-sort",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "gap",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "a view named 'Active <plural>' merges into the stock view and loses its sort and filters",
+      "use": "distinct view name or ppdv view sort",
+      "keywords": [
+        "stock view",
+        "default view",
+        "view sort",
+        "sort order",
+        "Active <"
+      ]
+    },
+    {
+      "id": "mda-business-rules",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "gap",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "businessRules[] is skipped where CreateProcessWithWfomJson isn't exposed",
+      "use": "business rule designer",
+      "keywords": [
+        "business rule",
+        "CreateProcessWithWfomJson"
+      ]
+    },
+    {
+      "id": "mda-genpage-first",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "conflict",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder proposes generative pages for overviews",
+      "use": "standards.generativePages (default: only when asked)",
+      "keywords": [
+        "genpage-first",
+        "generative pages for",
+        "overview page",
+        "dashboard page"
+      ]
+    },
+    {
+      "id": "mda-new-look",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "conflict",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder turns the new look and header refresh on",
+      "use": "standards.newLook",
+      "keywords": [
+        "newLook",
+        "new look",
+        "headerNavigationRefresh"
+      ]
+    },
+    {
+      "id": "mda-persona-roles",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "conflict",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder makes one role per persona and edits only roles it created",
+      "use": "security model from the design; existing roles via roleGrants[]",
+      "keywords": [
+        "persona role",
+        "one role per persona",
+        "roleGrants"
+      ]
+    },
+    {
+      "id": "mda-solution",
+      "skill": "model-driven-build",
+      "plugin": "model-apps",
+      "kind": "conflict",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder creates or uses the spec's solution",
+      "use": "always the project's solution and prefix",
+      "keywords": [
+        "spec's solution",
+        "solution.uniqueName",
+        "publisher prefix",
+        "target solution"
+      ]
+    },
+    {
+      "id": "sec-remove-privilege",
+      "skill": "security-roles",
+      "plugin": "model-apps",
+      "kind": "gap",
+      "checkedAgainst": "2.17.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "/app-builder only adds privileges to roles it didn't create",
+      "use": "ppdv role remove",
+      "keywords": [
+        "remove privilege",
+        "revoke",
+        "roleGrants[] removes",
+        "privileges removed"
+      ]
+    },
+    {
+      "id": "sec-unassign",
+      "skill": "security-roles",
+      "plugin": "dataverse",
+      "kind": "gap",
+      "checkedAgainst": "1.14.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "no Microsoft skill removes a role from a user",
+      "use": "ppdv role unassign",
+      "keywords": [
+        "unassign",
+        "remove role",
+        "disassociate"
+      ]
+    },
+    {
+      "id": "dv-int-range",
+      "skill": "dataverse-build",
+      "plugin": "dataverse",
+      "kind": "gap",
+      "checkedAgainst": "1.14.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "dv-metadata's Python route can't set min/max on whole-number columns",
+      "use": "Web API route (dataverse api request)",
+      "keywords": [
+        "MinValue",
+        "MaxValue",
+        "min/max",
+        "range",
+        "whole number",
+        "integer"
+      ]
+    },
+    {
+      "id": "dv-mcp-optional",
+      "skill": "dataverse-build",
+      "plugin": "dataverse",
+      "kind": "conflict",
+      "checkedAgainst": "1.14.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "dv-* skills prefer Dataverse MCP for small reads when enabled",
+      "use": "MCP optional; CLI/SDK when off",
+      "keywords": [
+        "prefer MCP",
+        "MCP first",
+        "MCP is preferred"
+      ]
+    },
+    {
+      "id": "flow-solution",
+      "skill": "flow-build",
+      "plugin": "power-automate",
+      "kind": "gap",
+      "checkedAgainst": "3.2.1",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "FlowAgent create_flow can't create a flow inside a solution",
+      "use": "ppdv solution add --type 29 --required, then ppdv verify",
+      "keywords": [
+        "solution"
+      ]
+    },
+    {
+      "id": "flow-enable",
+      "skill": "flow-build",
+      "plugin": "power-automate",
+      "kind": "conflict",
+      "checkedAgainst": "3.2.1",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "turning a flow on by PATCHing statecode doesn't register the trigger",
+      "use": "ppdv flow enable + flow check-trigger",
+      "keywords": [
+        "enable",
+        "turn on",
+        "trigger",
+        "statecode",
+        "callback"
+      ]
+    },
+    {
+      "id": "pcf-publish-all",
+      "skill": "pro-code",
+      "plugin": "pcf",
+      "kind": "conflict",
+      "checkedAgainst": "1.0.0",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "the pcf plugin's push publishes all pending customizations in the environment",
+      "use": "tell the user before pushing in shared dev environments",
+      "keywords": [
+        "publish",
+        "PublishAll"
+      ]
+    },
+    {
+      "id": "pac-pcf-push-solution",
+      "skill": "pro-code",
+      "plugin": "pac",
+      "kind": "conflict",
+      "checkedAgainst": "2.12.2",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "pac pcf push uses a temporary PowerAppsTools_<prefix> solution",
+      "use": "always --solution-unique-name <solution>",
+      "keywords": [
+        "pcf push",
+        "solution-unique-name"
+      ]
+    },
+    {
+      "id": "pac-model-create-solution",
+      "skill": "model-driven-build",
+      "plugin": "pac",
+      "kind": "conflict",
+      "checkedAgainst": "2.12.2",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "pac model create uses the default solution",
+      "use": "always pass --solution",
+      "keywords": [
+        "pac model"
+      ]
+    },
+    {
+      "id": "cps-init-solution",
+      "skill": "copilot-studio-build",
+      "plugin": "pac",
+      "kind": "conflict",
+      "checkedAgainst": "2.12.2",
+      "checked": "2026-10-24",
+      "status": "active",
+      "need": "pac copilot init creates its own solution <prefix>_<Name>",
+      "use": "ppdv solution add --type 10225 --required into the project solution",
+      "keywords": [
+        "copilot init",
+        "copilot"
+      ]
+    }
+  ]
+}

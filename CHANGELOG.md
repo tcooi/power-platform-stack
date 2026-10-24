@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.10.0 (2026-10-24)
+- `fallbacks.json`: every fallback and conflict rule with the Microsoft plugin (or pac) version it was checked against. Skill tables carry the entry id; `validate.py` fails when an active entry isn't referenced, a retired one still is, or fields are missing, and warns after 90 days.
+- `ppdv fallbacks status|outdated|review|mark|retire`: installed vs checked vs latest versions (GitHub, NuGet; no sign-in, no cost), changelog sections or commits since the checked version with the entries they mention, and dry-run updates of the file.
+- `ppdv probe` reports unverified entries; the lead checks Microsoft's updated skill before using one.
+- Weekly GitHub Action (`fallbacks.yml`) keeps one issue open while Microsoft has newer versions than we checked.
+- First run: model-apps 2.17.0 → 2.19.0, dataverse 1.14.0 → 1.16.1 and pac 2.12.2 → 2.14.1 are behind upstream.
+
 ## 2.9.0 (2026-10-24)
 - `ppdv verify`: after every build step checks that new/changed components (yours only) are in the solution (incl. table subcomponents), use the publisher prefix, flow triggers are registered; health as a warning. Verified live (pass on the E2E build, catches a component outside the solution with a foreign prefix).
 - Raw `ppdv request` writes need `--reason`, are logged to `.pp/state/api-writes.jsonl`, record PATCH/PUT are read back, and the hook asks the user first.
