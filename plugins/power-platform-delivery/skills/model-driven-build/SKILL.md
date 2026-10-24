@@ -19,7 +19,7 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 |---|---|---|
 | Fields in the form **header** | Form designer, via `browser-automation-fallback` or the user (then export/unpack). Don't hand-edit `formxml`; it needs exact control IDs and a mistake breaks the form. | `mda-header-fields` |
 | **Default value** of a Choice column | `ppdv choice default --table T --column C --value N --apply` (Web API: update the column (`.../Attributes(LogicalName='<col>')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata`) with `DefaultFormValue` + `MSCRM.SolutionUniqueName`, then publish. Observed: when the default was set on an existing column (TEST-US) API-created rows stayed empty; when the column arrived with the default through a solution import (TEST) API-created rows got it. Don't rely on it for API/import creates: test one row in each environment, and keep a flow or plug-in where it matters. | `mda-choice-default` |
-| A view sorted/filtered your way | Don't name it `Active <plural>`: that merges into the table's stock default view and the authored sort and filters are dropped (`--verify` reports the missing sort). Use a distinct name, or fix the sort with `ppdv view sort --view <name> --table T --attr <col> --replace --apply`. | `mda-view-sort` |
+| A view sorted/filtered your way | Don't name it `Active <plural>` (or like any view the table has): the build adds the spec's columns to that view but not its sort or filters, and only warns. Use a distinct name, or fix the sort with `ppdv view sort --view <name> --table T --attr <col> --replace --apply`. | `mda-view-sort` |
 | Business rules | `businessRules[]` only works where the environment exposes `CreateProcessWithWfomJson`; otherwise the build skips them with a warning. Fall back to the business rule designer. | `mda-business-rules` |
 
 
@@ -37,7 +37,7 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 | Tool | Microsoft default | Our rule | Id |
 |---|---|---|---|
 | `/app-builder` | Genpage-first: proposes generative pages for overviews | `standards.generativePages` (default: only when asked) | `mda-genpage-first` |
-| `/app-builder` | New look shell on (`app.newLook`), header refresh on | `standards.newLook` | `mda-new-look` |
+| `/app-builder` | New look off (`app.newLook`), but header and navigation refresh written ON for a new app unless `app.headerNavigationRefresh: false` | `standards.newLook` | `mda-new-look` |
 | `/app-builder` | One role per persona when `personas[]` is given; edits only roles it created | security model from the design; existing roles via `roleGrants[]` | `mda-persona-roles` |
 | `/app-builder` | Creates/uses the spec's solution | always the project's `solution.uniqueName` and prefix | `mda-solution` |
 | `pac model create` | Default solution | always pass `--solution` | `pac-model-create-solution` |

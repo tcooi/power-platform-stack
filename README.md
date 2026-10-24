@@ -45,12 +45,12 @@ See also [docs/quickstart.md](docs/quickstart.md) and [CHANGELOG.md](CHANGELOG.m
 ### 1. This plugin
 Claude Code:
 ```
-/plugin marketplace add tcooi/power-platform
+/plugin marketplace add tcooi/power-platform-stack
 /plugin install power-platform-delivery@ppp
 ```
 Copilot CLI:
 ```
-copilot plugin marketplace add tcooi/power-platform
+copilot plugin marketplace add tcooi/power-platform-stack
 copilot plugin install power-platform-delivery@ppp
 ```
 
@@ -62,7 +62,7 @@ copilot plugin install power-platform-delivery@ppp
 /plugin install power-automate@power-platform-skills
 /plugin install pcf@power-platform-skills
 ```
-Dataverse: Claude Code `/plugin install dataverse@claude-plugins-official`; Copilot `/plugin install dataverse@awesome-copilot`. Then ask "Connect to my Dataverse environment" (`dv-connect`).
+Dataverse: Claude Code `/plugin install dataverse@power-platform-skills` (Microsoft's latest; `dataverse@claude-plugins-official` is pinned to an older commit, 1.14.0 on 2026-10-25; if the install fails with "Could not read from remote repository", git is using SSH: run it once with `GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com:`); Copilot `/plugin install dataverse@awesome-copilot`. Then ask "Connect to my Dataverse environment" (`dv-connect`).
 
 ### 3. Local tools
 | Need | Used for | Setup |
@@ -103,7 +103,7 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 Microsoft Learn MCP is bundled (`.mcp.json`).
 
 ## Status in GitHub Copilot CLI (2026-10-22)
-- Marketplace and plugin install correctly (`copilot plugin marketplace add tcooi/power-platform`, `copilot plugin install power-platform-delivery@ppp` → 44 skills).
+- Marketplace and plugin install correctly (`copilot plugin marketplace add tcooi/power-platform-stack`, `copilot plugin install power-platform-delivery@ppp` → 44 skills).
 - Not yet verified with a model: the test account's Copilot CLI access was blocked by policy. Organizations can also disable third-party MCP servers, which removes the bundled Microsoft Learn server and Microsoft's Playwright/FlowAgent servers in Copilot; the toolkit (`ppdv`) doesn't depend on MCP.
 
 ## Upgrading from 1.x

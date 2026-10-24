@@ -1,7 +1,7 @@
 # Quick start for consultants
 
 1. **Install** (once)
-   - Claude Code: `/plugin marketplace add tcooi/power-platform` → `/plugin install power-platform-delivery@ppp`
+   - Claude Code: `/plugin marketplace add tcooi/power-platform-stack` → `/plugin install power-platform-delivery@ppp`
    - Microsoft plugins: `/plugin marketplace add microsoft/power-platform-skills`, then install `model-apps`, `canvas-apps`, `power-automate`, `pcf`; plus `dataverse@claude-plugins-official` (Copilot: `dataverse@awesome-copilot`).
    - Tools: pac CLI, .NET 10 SDK, Node 18+, Azure CLI (`az login --allow-no-subscriptions`), Python 3 with a project `.venv` for the Dataverse SDK.
 
