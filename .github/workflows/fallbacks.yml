@@ -1,0 +1,38 @@
+name: Microsoft plugin updates
+# Weekly: compares the latest Microsoft plugin and pac versions with the versions our fallbacks were
+# checked against (plugins/power-platform-delivery/fallbacks.json) and keeps one issue open while any is behind.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Compare versions
+        run: node plugins/power-platform-delivery/scripts/ppdv.mjs fallbacks outdated > outdated.json
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Microsoft plugin updates: review fallbacks"
+          node -e '
+            const d = require("./outdated.json");
+            if (!d.behind.length) process.exit(0);
+            const rows = d.behind.map((n) => { const p = d.plugins[n]; return `| ${n} | ${p.checkedAgainst} | ${p.latest} | ${p.entries.join(", ")} |`; });
+            require("fs").writeFileSync("body.md", [
+              "Microsoft published newer versions than our fallbacks were checked against.", "",
+              "| Plugin | Checked | Latest | Entries |", "|---|---|---|---|", ...rows, "",
+              "For each plugin: update it locally, then run `node plugins/power-platform-delivery/scripts/ppdv.mjs fallbacks review --plugin <name>`,",
+              "check the entries it flags, and record the result with `fallbacks mark` or `fallbacks retire`. Close this issue when done.",
+            ].join("\n"));'
+          NUM=$(gh issue list --state open --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+          if [ ! -f body.md ]; then echo "all fallbacks checked against the latest versions"; exit 0; fi
+          if [ -n "$NUM" ]; then gh issue edit "$NUM" --body-file body.md; else gh issue create --title "$TITLE" --body-file body.md; fi

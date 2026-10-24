@@ -31,7 +31,7 @@ description: "Our standards for Copilot Studio agents (instructions, tools, know
 - `resources/agent-instructions-design.md` — Write effective Copilot Studio agent instructions, tool descriptions and knowledge setup. Use when drafting or tuning an agent.
 - `resources/agent-evaluation-plan.md` — Plan and run evaluation of a Copilot Studio agent with test sets covering happy paths, edge cases and safety. Use before publishing.
 
-## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
-| Tool | Microsoft default | Our rule |
-|---|---|---|
-| `pac copilot init` | New solution `<prefix>_<Name>` | `ppdv solution add --type 10225 --required` into the project solution |
+## Known conflicts with Microsoft's defaults (our rule wins; checked versions in `fallbacks.json`)
+| Tool | Microsoft default | Our rule | Id |
+|---|---|---|---|
+| `pac copilot init` | New solution `<prefix>_<Name>` | `ppdv solution add --type 10225 --required` into the project solution | `cps-init-solution` |

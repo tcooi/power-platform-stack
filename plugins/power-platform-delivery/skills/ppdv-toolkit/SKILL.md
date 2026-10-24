@@ -21,6 +21,7 @@ Run with Node 18+: `node "<plugin root>/scripts/ppdv.mjs" <command>`. Output is 
 | Need | Command |
 |---|---|
 | Tools, auth, which Microsoft plugins/skills are installed | `probe` |
+| Are our fallbacks still checked against the installed / latest Microsoft plugins? | `fallbacks status` (local; also in `probe` as `fallbacks`) · `fallbacks outdated` (latest from GitHub/NuGet) · `fallbacks review --plugin P` (changelog or commits since the checked version, entries mentioned) · `fallbacks mark --plugin P --version V` · `fallbacks retire --id X --in "P V"` (maintainers, dry run until `--apply`) |
 | Is the environment healthy (background service, stuck system jobs)? | `health` |
 | Who/where am I | `whoami` |
 | After every build step | `verify --solution S --since <start>`: new/changed components (yours only) in the solution, publisher prefix, flow triggers; health as warning; exit 1 on findings |

@@ -14,13 +14,13 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 - Forms: key status in header, tabs by phase, few controls on load. Views: the columns users need, quick-find columns, lookup views.
 - Generative pages only where a form/view/dashboard can't do the job; record why.
 
-## What /app-builder can't do, and what to use instead
-| Need | Use |
-|---|---|
-| Fields in the form **header** | Form designer, via `browser-automation-fallback` or the user (then export/unpack). Don't hand-edit `formxml`; it needs exact control IDs and a mistake breaks the form. |
-| **Default value** of a Choice column | `ppdv choice default --table T --column C --value N --apply` (Web API: update the column (`.../Attributes(LogicalName='<col>')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata`) with `DefaultFormValue` + `MSCRM.SolutionUniqueName`, then publish. Observed: when the default was set on an existing column (TEST-US) API-created rows stayed empty; when the column arrived with the default through a solution import (TEST) API-created rows got it. Don't rely on it for API/import creates: test one row in each environment, and keep a flow or plug-in where it matters. |
-| A view sorted/filtered your way | Don't name it `Active <plural>`: that merges into the table's stock default view and the authored sort and filters are dropped (`--verify` reports the missing sort). Use a distinct name, or fix the sort with `ppdv view sort --view <name> --table T --attr <col> --replace --apply`. |
-| Business rules | `businessRules[]` only works where the environment exposes `CreateProcessWithWfomJson`; otherwise the build skips them with a warning. Fall back to the business rule designer. |
+## What /app-builder can't do, and what to use instead (checked versions in `fallbacks.json`)
+| Need | Use | Id |
+|---|---|---|
+| Fields in the form **header** | Form designer, via `browser-automation-fallback` or the user (then export/unpack). Don't hand-edit `formxml`; it needs exact control IDs and a mistake breaks the form. | `mda-header-fields` |
+| **Default value** of a Choice column | `ppdv choice default --table T --column C --value N --apply` (Web API: update the column (`.../Attributes(LogicalName='<col>')/Microsoft.Dynamics.CRM.PicklistAttributeMetadata`) with `DefaultFormValue` + `MSCRM.SolutionUniqueName`, then publish. Observed: when the default was set on an existing column (TEST-US) API-created rows stayed empty; when the column arrived with the default through a solution import (TEST) API-created rows got it. Don't rely on it for API/import creates: test one row in each environment, and keep a flow or plug-in where it matters. | `mda-choice-default` |
+| A view sorted/filtered your way | Don't name it `Active <plural>`: that merges into the table's stock default view and the authored sort and filters are dropped (`--verify` reports the missing sort). Use a distinct name, or fix the sort with `ppdv view sort --view <name> --table T --attr <col> --replace --apply`. | `mda-view-sort` |
+| Business rules | `businessRules[]` only works where the environment exposes `CreateProcessWithWfomJson`; otherwise the build skips them with a warning. Fall back to the business rule designer. | `mda-business-rules` |
 
 
 ## Always
@@ -33,11 +33,11 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 - `resources/command-bar-power-fx.md` — Add or change model-driven app command bar buttons with Power Fx command bar (modern commanding). Use for custom buttons and rules.
 - `resources/business-rules-and-bpf.md` — Create business rules and business process flows for model-driven apps with Microsoft's /app-builder skill or the designers. Use for form logic and guided stage-based processes.
 
-## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
-| Tool | Microsoft default | Our rule |
-|---|---|---|
-| `/app-builder` | Genpage-first: proposes generative pages for overviews | `standards.generativePages` (default: only when asked) |
-| `/app-builder` | New look shell on (`app.newLook`), header refresh on | `standards.newLook` |
-| `/app-builder` | One role per persona when `personas[]` is given; edits only roles it created | security model from the design; existing roles via `roleGrants[]` |
-| `/app-builder` | Creates/uses the spec's solution | always the project's `solution.uniqueName` and prefix |
-| `pac model create` | Default solution | always pass `--solution` |
+## Known conflicts with Microsoft's defaults (our rule wins; checked versions in `fallbacks.json`)
+| Tool | Microsoft default | Our rule | Id |
+|---|---|---|---|
+| `/app-builder` | Genpage-first: proposes generative pages for overviews | `standards.generativePages` (default: only when asked) | `mda-genpage-first` |
+| `/app-builder` | New look shell on (`app.newLook`), header refresh on | `standards.newLook` | `mda-new-look` |
+| `/app-builder` | One role per persona when `personas[]` is given; edits only roles it created | security model from the design; existing roles via `roleGrants[]` | `mda-persona-roles` |
+| `/app-builder` | Creates/uses the spec's solution | always the project's `solution.uniqueName` and prefix | `mda-solution` |
+| `pac model create` | Default solution | always pass `--solution` | `pac-model-create-solution` |

@@ -29,8 +29,8 @@ description: "Our standards for building Dataverse tables, columns, relationship
 - `resources/dataverse-schema-build.md` — Create Dataverse tables, columns, relationships, choices and alternate keys in a solution using Microsoft's dv-metadata skill, the Dataverse SDK for Python or the Web API. Use when implementing an approved data model.
 - `resources/sample-data-load.md` — Load sample or migration data into Dataverse with the right bulk API (CreateMultiple, UpdateMultiple, UpsertMultiple, $batch) via Microsoft's dv-data skill, Dataverse SDK for Python, Dataverse CLI or Web API. Use for test data or initial loads.
 
-## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
-| Tool | Microsoft default | Our rule |
-|---|---|---|
-| `dv-metadata` Python route | Can't set integer min/max | Web API route (`dataverse api request`) |
-| Dataverse MCP | Preferred for small reads when enabled | optional; CLI/SDK when off |
+## Known conflicts with Microsoft's defaults (our rule wins; checked versions in `fallbacks.json`)
+| Tool | Microsoft default | Our rule | Id |
+|---|---|---|---|
+| `dv-metadata` Python route | Can't set integer min/max | Web API route (`dataverse api request`) | `dv-int-range` |
+| Dataverse MCP | Preferred for small reads when enabled | optional; CLI/SDK when off | `dv-mcp-optional` |

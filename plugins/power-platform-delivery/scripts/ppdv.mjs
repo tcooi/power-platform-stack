@@ -44,6 +44,13 @@ Writes:   dry run by default; add --apply. Production targets also need --allow-
   state phase --set <discover|design|alm-plan|build|review|test|release|handover>
   state task --id <T1> [--title <t>] --status <todo|in-progress|waiting|done|blocked>
   state add --kind <approval|decision|risk|lesson|artifact|question> --text <text>
+  fallbacks status                               Installed Microsoft plugin/pac versions vs. the versions our fallbacks
+                                                 were checked against (local, no network; also part of probe)
+  fallbacks outdated                             Same, plus the latest published versions (GitHub, NuGet; free, no sign-in)
+  fallbacks review --plugin <p>                  What changed since the checked version (changelog or commits) and which
+                                                 entries it mentions
+  fallbacks mark --plugin <p> [--version <v>] [--except id,id]   Entries still needed: record the checked version
+  fallbacks retire --id <id> --in "<plugin> <version>"           Microsoft covers it now: retire the entry
   teardown                                       Delete recorded test artifacts in dependency order (dry run; --apply)
 `;
 
@@ -212,6 +219,7 @@ async function main() {
   if (!cmd || opt.help) { process.stdout.write(HELP); return; }
 
   if (cmd === "probe") return probe();
+  if (cmd === "fallbacks") return fallbacksCmd(sub);
   if (cmd === "state") return stateCmd(sub);
   const t = targetEnv(); ENV = "https://" + t.url.replace(/^https?:\/\//, "");
 
@@ -658,8 +666,10 @@ async function checkTrigger(id) {
 }
 
 function run(cmd, args) { try { return execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim(); } catch { return null; } }
+function pacBinary() { return run("which", ["pac"]) || (existsSync(join(homedir(), ".dotnet/tools/pac")) ? join(homedir(), ".dotnet/tools/pac") : null); }
+function pacVersion(bin) { return bin ? (run(bin, ["help"]) || "").match(/Version: ([\d.]+)/)?.[1] || null : null; }
 function probe() {
-  const pacBin = run("which", ["pac"]) || (existsSync(join(homedir(), ".dotnet/tools/pac")) ? join(homedir(), ".dotnet/tools/pac") : null);
+  const pacBin = pacBinary();
   const tools = {
     node: process.version,
     pac: pacBin ? (run(pacBin, ["help"]) || "").match(/Version: (\S+)/)?.[1] || "present" : null,
@@ -691,7 +701,138 @@ function probe() {
     "power-automate": ["build-flow", "debug-flow"], pcf: ["pcf"], "power-pages": ["create-site"] };
   const microsoft = Object.fromEntries(Object.entries(want).map(([k, names]) => [k, names.every((n) => skills[n]) ? "installed" : names.some((n) => skills[n]) ? "partial" : "missing"]));
   const pacMismatch = project && tools.pacOrg && !envEntry(tools.pacOrg) ? `pac points at ${tools.pacOrg}, which is not in .pp/project.json` : null;
-  out({ ok: true, project: projectPath, tools, microsoftPlugins: microsoft, warnings: [pacMismatch, tools.az ? null : "az not signed in", tools.dotnetSdks.some((v) => +v.split(".")[0] >= 10) ? null : ".NET 10 SDK missing (canvas-apps, pac copilot mcp)"].filter(Boolean) });
+  const fb = fallbacksStatus(tools.pac?.match(/^[\d.]+/)?.[0]);
+  out({ ok: true, project: projectPath, tools, microsoftPlugins: microsoft, fallbacks: fb, warnings: [...fb.warnings, pacMismatch, tools.az ? null : "az not signed in", tools.dotnetSdks.some((v) => +v.split(".")[0] >= 10) ? null : ".NET 10 SDK missing (canvas-apps, pac copilot mcp)"].filter(Boolean) });
+}
+
+// ---------------------------------------------------------------- fallbacks (fallbacks.json)
+const FB_PATH = join(dirname(new URL(import.meta.url).pathname), "..", "fallbacks.json");
+const verParts = (v) => String(v || "").split(/[.+-]/).slice(0, 3).map((n) => parseInt(n, 10) || 0);
+const cmpVer = (a, b) => { const x = verParts(a), y = verParts(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+const minVer = (vs) => vs.filter(Boolean).sort(cmpVer)[0] || null;
+function loadFallbacks() {
+  if (!existsSync(FB_PATH)) fail(`fallbacks.json not found next to the toolkit (${FB_PATH})`);
+  return JSON.parse(readFileSync(FB_PATH, "utf8"));
+}
+// Installed versions per plugin name, per tool (Claude Code record, Copilot CLI list), plus pac.
+function installedVersions(pacVer) {
+  const v = {};
+  const add = (name, tool, version, path) => { (v[name] ||= {})[tool] = { version, path }; };
+  const ip = join(homedir(), ".claude/plugins/installed_plugins.json");
+  if (existsSync(ip)) try {
+    for (const [k, arr] of Object.entries(JSON.parse(readFileSync(ip, "utf8")).plugins || {})) {
+      const last = arr[arr.length - 1];
+      if (last?.version) add(k.split("@")[0], "claude", last.version, last.installPath);
+    }
+  } catch {}
+  for (const m of (run("copilot", ["plugin", "list"]) || "").matchAll(/^\s*\S\s+([\w.-]+)@\S+\s+\(v([\d.]+)\)/gm)) add(m[1], "copilot", m[2]);
+  const pv = pacVer === undefined ? pacVersion(pacBinary()) : pacVer;
+  if (pv) add("pac", "cli", pv);
+  return v;
+}
+function fallbacksStatus(pacVer) {
+  const fb = loadFallbacks(), inst = installedVersions(pacVer), plugins = {}, warnings = [], unverified = [];
+  for (const [name, src] of Object.entries(fb.sources)) {
+    const active = fb.entries.filter((e) => e.plugin === name && e.status === "active");
+    if (!active.length) continue;
+    const checked = minVer(active.map((e) => e.checkedAgainst));
+    const tools = Object.fromEntries(Object.entries(inst[(src.installed || [name])[0]] || {}).map(([t, x]) => [t, x.version]));
+    const installed = minVer(Object.values(tools));
+    const newer = active.filter((e) => Object.values(tools).some((iv) => cmpVer(iv, e.checkedAgainst) > 0)).map((e) => e.id);
+    const state = !installed ? "not installed" : newer.length ? "updated since check" : cmpVer(installed, checked) < 0 ? "older than checked" : "as checked";
+    plugins[name] = { checkedAgainst: checked, installed: tools, state, entries: active.map((e) => e.id) };
+    if (newer.length) { unverified.push(...newer); warnings.push(`${name} ${Object.values(tools).join("/")} is newer than ${checked}, which our fallbacks were checked against: before using ${newer.join(", ")}, check whether Microsoft's skill now covers it; review with \`ppdv fallbacks review --plugin ${name}\``); }
+    else if (state === "older than checked") warnings.push(`${name} ${installed} is older than ${checked} (our fallbacks were checked against it): update the plugin`);
+  }
+  return { file: FB_PATH.replace(homedir(), "~"), plugins, unverified, warnings };
+}
+async function getText(url, json) {
+  const r = await fetch(url, { headers: { "user-agent": "ppdv", accept: json ? "application/json" : "*/*" }, signal: AbortSignal.timeout(20000) });
+  if (!r.ok) throw new Error(`${r.status} ${url}`);
+  return json ? r.json() : r.text();
+}
+async function latestVersion(src) {
+  if (src.nuget) {
+    const vs = (await getText(`https://api.nuget.org/v3-flatcontainer/${src.nuget.toLowerCase()}/index.json`, true)).versions.filter((v) => !v.includes("-"));
+    return vs.sort(cmpVer).pop();
+  }
+  return JSON.parse(await getText(`https://raw.githubusercontent.com/${src.repo}/HEAD/${src.path}/.claude-plugin/plugin.json`)).version;
+}
+// Changelog sections newer than `since` ("## [2.18.0]" or "## [Unreleased] — 2.18.0"), else commits touching the path.
+async function changesSince(src, since, sinceDate, installPath) {
+  if (src.nuget) return { source: "https://learn.microsoft.com/power-platform/developer/cli/release-notes", sections: [] };
+  let text = installPath && existsSync(join(installPath, "CHANGELOG.md")) ? readFileSync(join(installPath, "CHANGELOG.md"), "utf8") : null;
+  let source = text ? join(installPath, "CHANGELOG.md").replace(homedir(), "~") : null;
+  try { const up = await getText(`https://raw.githubusercontent.com/${src.repo}/HEAD/${src.path}/CHANGELOG.md`); text = up; source = `github.com/${src.repo}/blob/HEAD/${src.path}/CHANGELOG.md`; } catch {}
+  if (text) {
+    const sections = [];
+    for (const part of text.split(/^## /m).slice(1)) {
+      const version = part.split("\n")[0].match(/(\d+\.\d+\.\d+)/)?.[1];
+      if (version && cmpVer(version, since) > 0) sections.push({ version, text: part.slice(part.indexOf("\n") + 1).trim() });
+    }
+    return { source, sections };
+  }
+  // No changelog: find the commit that set the checked version in plugin.json, then list the commits after it.
+  const api = (q) => getText(`https://api.github.com/repos/${src.repo}/commits?${q}`, true);
+  let from = `${sinceDate}T00:00:00Z`;
+  for (const c of await api(`path=${encodeURIComponent(src.path + "/.claude-plugin/plugin.json")}&per_page=30`)) {
+    const v = JSON.parse(await getText(`https://raw.githubusercontent.com/${src.repo}/${c.sha}/${src.path}/.claude-plugin/plugin.json`)).version;
+    if (cmpVer(v, since) <= 0) { from = c.commit.committer.date; break; }
+  }
+  const commits = (await api(`path=${encodeURIComponent(src.path)}&since=${from}&per_page=100`)).filter((c) => c.commit.committer.date > from);
+  return { source: `github.com/${src.repo}/commits/HEAD/${src.path} (since ${from})`, sections: commits.map((c) => ({ version: c.sha.slice(0, 7), text: c.commit.message })) };
+}
+function saveFallbacks(fb, change) {
+  if (!opt.apply) out({ ok: true, dryRun: true, file: FB_PATH, change, hint: "add --apply to write" });
+  writeFileSync(FB_PATH, JSON.stringify(fb, null, 2) + "\n");
+  out({ ok: true, file: FB_PATH, change, next: FB_PATH.includes("/plugins/cache/") ? "this is an installed copy: make the same change in the repo" : "run python3 scripts/validate.py, bump the plugin version, commit" });
+}
+async function fallbacksCmd(sub) {
+  if (sub === "status") return out({ ok: true, ...fallbacksStatus() });
+  const fb = loadFallbacks();
+  if (sub === "outdated") {
+    const st = fallbacksStatus(), rows = {};
+    for (const [name, p] of Object.entries(st.plugins)) {
+      let latest = null, error;
+      try { latest = await latestVersion(fb.sources[name]); } catch (e) { error = e.message; }
+      rows[name] = { ...p, latest, error, action: !latest ? "couldn't read latest" : cmpVer(latest, p.checkedAgainst) > 0 ? `review: ppdv fallbacks review --plugin ${name}` : "none" };
+    }
+    return out({ ok: true, plugins: rows, behind: Object.keys(rows).filter((n) => rows[n].action.startsWith("review")) });
+  }
+  const name = opt.plugin;
+  if (sub === "review") {
+    const src = fb.sources[name]; if (!src) fail(`unknown plugin ${name}; known: ${Object.keys(fb.sources).join(", ")}`);
+    const entries = fb.entries.filter((e) => e.plugin === name && e.status === "active");
+    const since = minVer(entries.map((e) => e.checkedAgainst)), sinceDate = entries.map((e) => e.checked).sort()[0];
+    const inst = installedVersions()[(src.installed || [name])[0]] || {};
+    let latest = null; try { latest = await latestVersion(src); } catch {}
+    const ch = await changesSince(src, since, sinceDate, inst.claude?.path);
+    const lines = ch.sections.flatMap((s) => s.text.split("\n").map((l) => ({ version: s.version, line: l.trim() })));
+    const review = entries.map((e) => {
+      const hits = lines.filter((l) => e.keywords?.some((k) => l.line.toLowerCase().includes(k.toLowerCase())));
+      return { id: e.id, need: e.need, use: e.use, mentions: hits.slice(0, 8).map((h) => `[${h.version}] ${h.line.slice(0, 240)}`),
+        suggestion: src.nuget ? `read the release notes (${ch.source}) for ${since} → ${latest || "latest"}, check \`pac <command> help\`, then mark or retire`
+          : hits.length ? "read the mentions; test whether Microsoft's skill now does it, then mark or retire" : "not mentioned: likely still needed (mark)" };
+    });
+    return out({ ok: true, plugin: name, checkedAgainst: since, installed: Object.fromEntries(Object.entries(inst).map(([t, x]) => [t, x.version])), latest,
+      changes: { source: ch.source, versions: ch.sections.map((s) => s.version) }, entries: review,
+      next: [`still needed: ppdv fallbacks mark --plugin ${name} --version ${latest || "<v>"} [--except <ids>] --apply`, `covered now: ppdv fallbacks retire --id <id> --in "${name} <version>" --apply`] });
+  }
+  if (sub === "mark") {
+    if (!fb.sources[name]) fail(`unknown plugin ${name}`);
+    const version = opt.version || minVer(Object.values(installedVersions()[(fb.sources[name].installed || [name])[0]] || {}).map((x) => x.version));
+    if (!version) fail("pass --version (plugin not installed here)");
+    const except = String(opt.except || "").split(",").filter(Boolean), today = new Date().toISOString().slice(0, 10), ids = [];
+    for (const e of fb.entries) if (e.plugin === name && e.status === "active" && !except.includes(e.id)) { e.checkedAgainst = version; e.checked = today; ids.push(e.id); }
+    return saveFallbacks(fb, { plugin: name, checkedAgainst: version, entries: ids, skipped: except });
+  }
+  if (sub === "retire") {
+    const e = fb.entries.find((x) => x.id === opt.id); if (!e) fail(`no entry ${opt.id}`);
+    if (!opt.in) fail('pass --in "<plugin> <version>" (the version that covers it)');
+    Object.assign(e, { status: "retired", retiredIn: opt.in, checked: new Date().toISOString().slice(0, 10) });
+    return saveFallbacks(fb, { id: e.id, retiredIn: opt.in, alsoDo: `remove the fallback steps for ${e.id} from skills/${e.skill}/SKILL.md` });
+  }
+  fail("fallbacks status|outdated|review|mark|retire");
 }
 
 main().catch((e) => { if (e === EXIT) return; try { fail(e.message); } catch {} });

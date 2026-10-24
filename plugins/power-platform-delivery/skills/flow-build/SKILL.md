@@ -32,8 +32,8 @@ description: "Our standards for Power Automate cloud flows (Dataverse triggers, 
 - `resources/flow-error-handling-pattern.md` — Standard try/catch/finally scope pattern, retries and alerting for Power Automate flows. Use for any production flow.
 - `resources/flow-dataverse-triggers.md` — Configure Dataverse triggers and actions correctly (filter rows, select columns, scope, relationships, upsert). Use when building Dataverse-driven flows.
 
-## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
-| Tool | Microsoft default | Our rule |
-|---|---|---|
-| `power-automate` `create_flow` | Creates the flow outside any solution; FlowAgent can't target one | add it: `ppdv solution add --type 29 --required`, then `ppdv verify` |
-| Turning flows on | Plugin or flow service | never PATCH `statecode`; `ppdv flow enable` |
+## Known conflicts with Microsoft's defaults (our rule wins; checked versions in `fallbacks.json`)
+| Tool | Microsoft default | Our rule | Id |
+|---|---|---|---|
+| `power-automate` `create_flow` | Creates the flow outside any solution; FlowAgent can't target one | add it: `ppdv solution add --type 29 --required`, then `ppdv verify` | `flow-solution` |
+| Turning flows on | Plugin or flow service | never PATCH `statecode`; `ppdv flow enable` | `flow-enable` |
