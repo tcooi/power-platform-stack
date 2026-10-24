@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.10.1 (2026-10-25)
+- First fallback review: model-apps 2.19.0, dataverse 1.16.1 and pac 2.14.1. All entries still needed except `dv-int-range` (retired: the Python SDK route now sets whole-number min/max; verified in TEST-US with a temporary column, removed afterwards).
+- Corrected two descriptions: `/app-builder` leaves the new look off by default but writes the header and navigation refresh ON for new apps; a view named like an existing one gets the spec's columns but not its sort or filters (the build now warns).
+- README: install dataverse from `power-platform-skills` (the Anthropic marketplace pins 1.14.0), HTTPS workaround for the install, repo renamed to `tcooi/power-platform-stack`.
+
 ## 2.10.0 (2026-10-24)
 - `fallbacks.json`: every fallback and conflict rule with the Microsoft plugin (or pac) version it was checked against. Skill tables carry the entry id; `validate.py` fails when an active entry isn't referenced, a retired one still is, or fields are missing, and warns after 90 days.
 - `ppdv fallbacks status|outdated|review|mark|retire`: installed vs checked vs latest versions (GitHub, NuGet; no sign-in, no cost), changelog sections or commits since the checked version with the entries they mention, and dry-run updates of the file.
