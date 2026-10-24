@@ -16,7 +16,7 @@ description: "Application lifecycle management for Power Platform: ALM plan, env
 9. Before deploying, run `ppdv health --target <env>` on the target: if its background service is stuck, Dataverse-triggered flows, async plug-ins and `--async` imports won't run there.
 
 ## Verified end to end (TEST-US → TEST, 2026-10-22)
-1. Package only what you ship: create a release solution (`ppdv request POST solutions …`), then `ppdv solution add --type <n> --required` for each root component (table 1, role 20, flow 29, app 80); `--required` pulls in dependencies (connection reference, sitemap, app icon). Wait ~30 s after creating the solution before adding components.
+1. Package only what you ship: create a release solution (`ppdv request POST solutions … --reason "release solution"`), then `ppdv solution add --type <n> --required` for each root component (table 1, role 20, flow 29, app 80); `--required` pulls in dependencies (connection reference, sitemap, app icon). Wait ~30 s after creating the solution before adding components.
 2. `pac solution export --name <sol> --managed --path out/<sol>_managed.zip --environment <dev>` → `pac solution unpack --zipfile … --folder src/<sol> --packagetype Managed`.
 3. `pac solution create-settings --solution-zip … --settings-file deploy/<stage>.json`, fill `ConnectionId` per environment (an existing connection in the target, e.g. `shared-commondataser-…`).
 4. `pac solution import --path … --environment <target id> --settings-file deploy/<stage>.json --activate-plugins` (drop `--async` if the target says async operations are disabled).

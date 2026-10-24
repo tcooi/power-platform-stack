@@ -72,19 +72,19 @@ function ppdvRun(cwd, args) {
   return { code: r.status, json: JSON.parse(r.stdout || "{}") };
 }
 test("ppdv: writes are dry runs without --apply", () => {
-  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--data", "{}"]);
+  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--data", "{}", "--reason", "t"]);
   assert.equal(r.code, 0); assert.equal(r.json.dryRun, true);
 });
 test("ppdv: writes to an environment outside the project are refused", () => {
-  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--env", "https://other.crm.dynamics.com", "--apply"]);
+  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--env", "https://other.crm.dynamics.com", "--reason", "t", "--apply"]);
   assert.equal(r.code, 1); assert.match(r.json.problems.join(" "), /not listed/);
 });
 test("ppdv: production writes need --allow-prod", () => {
-  const r = ppdvRun(project(PROD), ["request", "DELETE", "accounts(1)", "--apply"]);
+  const r = ppdvRun(project(PROD), ["request", "DELETE", "accounts(1)", "--reason", "t", "--apply"]);
   assert.equal(r.code, 1); assert.match(r.json.problems.join(" "), /production/);
 });
 test("ppdv: writes without a project are refused", () => {
-  const r = ppdvRun(mkdtempSync(join(tmpdir(), "noproj-")), ["request", "POST", "accounts", "--env", "https://x.crm.dynamics.com", "--apply"]);
+  const r = ppdvRun(mkdtempSync(join(tmpdir(), "noproj-")), ["request", "POST", "accounts", "--env", "https://x.crm.dynamics.com", "--reason", "t", "--apply"]);
   assert.equal(r.code, 1);
 });
 test("ppdv: guard-check reports listed environments", () => {
@@ -127,4 +127,23 @@ test("ppdv state: tasks, phases and entries are validated", () => {
 test("repo: validate.py passes (manifests, frontmatter, sub-agent rules not drifted)", () => {
   const r = spawnSync("python3", [join(root, "scripts", "validate.py")], { cwd: root, encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout);
+});
+
+test("ppdv: raw writes without --reason are refused", () => {
+  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--data", "{}", "--apply"]);
+  assert.equal(r.code, 1); assert.match(r.json.error, /--reason/);
+});
+test("ppdv: raw writes with --reason are dry runs until --apply", () => {
+  const r = ppdvRun(project(DEV), ["request", "PATCH", "accounts(1)", "--data", "{}", "--reason", "test"]);
+  assert.equal(r.json.dryRun, true);
+});
+test("hook: raw ppdv request writes ask, named commands don't", () => {
+  const d = project(DEV);
+  assert.equal(decide(bash(d, "node /x/scripts/ppdv.mjs request PATCH accounts(1) --data '{}' --reason r --apply")), "ask");
+  assert.equal(decide(bash(d, "node /x/scripts/ppdv.mjs role add --role R --privilege prvReadx --apply")), "allow");
+  assert.equal(decide(bash(d, "node /x/scripts/ppdv.mjs request GET accounts")), "allow");
+});
+test("ppdv: large output is not truncated when piped", () => {
+  const r = spawnSync("node", [ppdv, "--help"], { encoding: "utf8" });
+  assert.match(r.stdout, /verify --solution/);
 });

@@ -11,3 +11,9 @@ description: "Pro-code extensions for Power Platform / D365 CE when configuratio
 - `resources/custom-api-and-actions.md` — Design Dataverse custom APIs implemented by plug-ins. Use for reusable server-side operations called from flows, apps, generative pages, agents or integrations.
 - `resources/web-resource-js.md` — Write JavaScript form scripts and web resources for model-driven apps using the formContext pattern. Use when form logic needs code.
 - `resources/pcf-control.md` — Create, test and package Power Apps component framework (PCF) code components with Microsoft's pcf plugin or pac pcf. Use for custom UI controls in model-driven or canvas apps.
+
+## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
+| Tool | Microsoft default | Our rule |
+|---|---|---|
+| `pac pcf push` | Temporary `PowerAppsTools_<prefix>` solution | always `--solution-unique-name <solution>` |
+| `pcf` plugin push | Publishes all pending customizations in the environment | tell the user before pushing in shared dev environments |

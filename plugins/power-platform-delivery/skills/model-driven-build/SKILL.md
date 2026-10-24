@@ -32,3 +32,12 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 - `resources/app-modules-forms-views.md` — Create app modules, sitemap, forms and views for a model-driven app with Microsoft's /app-builder skill, dv-metadata, pac model or the designers. Use when building or restructuring the UI of a model-driven app.
 - `resources/command-bar-power-fx.md` — Add or change model-driven app command bar buttons with Power Fx command bar (modern commanding). Use for custom buttons and rules.
 - `resources/business-rules-and-bpf.md` — Create business rules and business process flows for model-driven apps with Microsoft's /app-builder skill or the designers. Use for form logic and guided stage-based processes.
+
+## Known conflicts with Microsoft's defaults (our rule wins; last checked 2026-10-24)
+| Tool | Microsoft default | Our rule |
+|---|---|---|
+| `/app-builder` | Genpage-first: proposes generative pages for overviews | `standards.generativePages` (default: only when asked) |
+| `/app-builder` | New look shell on (`app.newLook`), header refresh on | `standards.newLook` |
+| `/app-builder` | One role per persona when `personas[]` is given; edits only roles it created | security model from the design; existing roles via `roleGrants[]` |
+| `/app-builder` | Creates/uses the spec's solution | always the project's `solution.uniqueName` and prefix |
+| `pac model create` | Default solution | always pass `--solution` |

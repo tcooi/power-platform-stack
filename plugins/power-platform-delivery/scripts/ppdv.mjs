@@ -4,7 +4,7 @@
 // Every write is a dry run unless --apply is passed, and is refused when the target environment
 // is not in .pp/project.json (or is marked production without --allow-prod).
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync, renameSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync, renameSync, appendFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 
@@ -17,7 +17,12 @@ Writes:   dry run by default; add --apply. Production targets also need --allow-
   probe                                          Tools, auth, installed Microsoft plugins and skills
   health                                         Environment health: background (async) service, stuck system jobs
   guard-check --url <url>                        Is <url> an allowed write target? (used by the hook)
-  request <METHOD> <path> [--data <json|@file>] [--solution <name>] [--strong]
+  request <METHOD> <path> [--data <json|@file>] [--solution <name>] [--strong] [--reason <why>]
+                                                 Writes need --reason (why no Microsoft skill or named command fits);
+                                                 logged to .pp/state/api-writes.jsonl, record PATCH/PUT read back
+  verify --solution <name> [--since <ISO time>] [--tables a,b] [--user <systemuserid>]
+                                                 After a build: new/changed components in the solution, publisher
+                                                 prefix, flow triggers, environment health. Exit 1 on findings.
   publish [--entities a,b]                       PublishXml for tables, or PublishAllXml
   solution components --solution <name> [--type <n>]
   solution has --solution <name> --id <guid>
@@ -52,7 +57,15 @@ for (let i = 0; i < argv.length; i++) {
     if (i + 1 < argv.length && !argv[i + 1].startsWith("--")) opt[k] = argv[++i]; else opt[k] = true;
   } else pos.push(a);
 }
-const out = (o, code = 0) => { process.stdout.write(JSON.stringify(o, null, 2) + "\n"); process.exit(code); };
+// out() prints and STOPS execution (callers rely on that, e.g. dry runs must never reach the write).
+// It exits only after stdout has flushed (piped output over 64 KB was cut off by an immediate exit),
+// so it throws EXIT to unwind; main() swallows it, and every catch block rethrows it.
+const EXIT = Symbol("ppdv-exit");
+let exiting = false;
+const out = (o, code = 0) => {
+  if (!exiting) { exiting = true; process.stdout.write(JSON.stringify(o, null, 2) + "\n", () => process.exit(code)); }
+  throw EXIT;
+};
 const fail = (msg, extra = {}) => out({ ok: false, error: msg, ...extra }, 1);
 const norm = (u) => (u || "").toLowerCase().replace(/\/+$/, "").replace(".api.crm", ".crm");
 
@@ -217,6 +230,8 @@ async function main() {
     return out({ ok: !issues.length, env: ENV, stuckJobs: stuck.length, completedJobsLast24h: recentDone > 0, oldestStuck: stuck.slice(0, 5).map((j) => ({ name: j.name, type: j.operationtype, created: j.createdon })), issues });
   }
 
+  if (cmd === "verify") return verifyCmd();
+
   if (cmd === "whoami") {
     const w = (await dvOk("GET", "WhoAmI")).json;
     const org = (await dvOk("GET", `organizations(${w.OrganizationId})?$select=name`)).json;
@@ -227,9 +242,27 @@ async function main() {
     const method = (sub || "GET").toUpperCase(), path = rest[0];
     if (!path) fail("request needs <METHOD> <path>");
     let body; if (opt.data) body = opt.data.startsWith("@") ? readFileSync(opt.data.slice(1), "utf8") : opt.data;
-    if (method !== "GET") guardWrite(ENV, `${method} ${path}`);
+    if (method !== "GET") {
+      if (!opt.reason || opt.reason === true) fail("raw API writes need --reason \"<why no Microsoft skill or named ppdv command fits>\"", { hint: "prefer a Microsoft skill or a named command (role, solution, flow, choice, view, publish); see tool-selection-guide" });
+      guardWrite(ENV, `${method} ${path} (reason: ${opt.reason})`);
+    }
     const r = await dv(method, path, { body, solution: opt.solution, strong: !!opt.strong });
-    return out({ ok: r.ok, status: r.status, entityId: r.headers["odata-entityid"], body: r.json }, r.ok ? 0 : 1);
+    let readBack;
+    if (method !== "GET") {
+      if (r.ok && (method === "PATCH" || method === "PUT") && body) {
+        try {
+          const sent = JSON.parse(body), keys = Object.keys(sent).filter((k) => !k.includes("@") && typeof sent[k] !== "object");
+          if (keys.length && !/^EntityDefinitions/.test(path)) {
+            const g = await dv("GET", `${path}?$select=${keys.join(",")}`, { strong: true });
+            const mismatched = g.ok ? keys.filter((k) => String(g.json[k]) !== String(sent[k])) : keys;
+            readBack = { checked: keys, mismatched };
+          }
+        } catch (e) { if (e === EXIT) throw e; }
+      }
+      auditWrite({ method, path, reason: opt.reason, status: r.status, entityId: r.headers["odata-entityid"], readBack });
+      if (readBack?.mismatched?.length) return out({ ok: false, status: r.status, error: "write returned success but read-back differs", readBack }, 1);
+    }
+    return out({ ok: r.ok, status: r.status, entityId: r.headers["odata-entityid"], readBack, body: r.json }, r.ok ? 0 : 1);
   }
 
   if (cmd === "publish") {
@@ -422,7 +455,7 @@ async function main() {
     for (const x of todo) {
       let r;
       try { r = await deleteArtifact(x); }
-      catch (e) { // long operations (managed solution uninstall) can outlive the connection: re-check
+      catch (e) { if (e === EXIT) throw e; // long operations (managed solution uninstall) can outlive the connection: re-check
         await sleep(30000);
         const still = await stillExists(x);
         r = still ? { ok: false, json: { error: { message: `${e.message}; item still exists` } } } : { ok: true };
@@ -458,6 +491,9 @@ function checkProject(pj) {
   if (!s.uniqueName) e.push("solution.uniqueName missing");
   if (s.prefix && !/^[a-z][a-z0-9]{1,7}$/.test(s.prefix)) e.push("solution.prefix must be 2-8 lowercase letters/digits starting with a letter");
   if (JSON.stringify(pj).match(/secret|password|clientsecret/i)) e.push("project.json must not contain secrets");
+  const st = pj.standards || {};
+  if (st.generativePages && !["never", "when-asked", "preferred"].includes(st.generativePages)) e.push("standards.generativePages must be never|when-asked|preferred");
+  for (const k of ["newLook", "personaRoles"]) if (k in st && typeof st[k] !== "boolean") e.push(`standards.${k} must be true or false`);
   return e;
 }
 function checkState(st) {
@@ -491,7 +527,7 @@ async function stillExists(a) {
     table: () => dv("GET", `EntityDefinitions(LogicalName='${a.id}')?$select=LogicalName`),
     solution: async () => { const r = await dv("GET", `solutions?$select=solutionid&$filter=uniquename eq '${a.id}'`); return { ok: r.ok && r.json.value.length > 0 }; },
   }[a.type];
-  try { return q ? (await q()).ok : true; } catch { return true; }
+  try { return q ? (await q()).ok : true; } catch (e) { if (e === EXIT) throw e; return true; }
 }
 async function deleteArtifact(a) {
   switch (a.type) {
@@ -517,6 +553,69 @@ async function deleteArtifact(a) {
     }
     default: return { ok: false, status: 0, json: { error: { message: `unknown type ${a.type}` } } };
   }
+}
+
+
+function auditWrite(entry) {
+  if (!projectPath) return;
+  const p = join(dirname(projectPath), "state", "api-writes.jsonl");
+  mkdirSync(dirname(p), { recursive: true });
+  appendFileSync(p, JSON.stringify({ at: new Date().toISOString(), env: ENV, ...entry }) + "\n");
+}
+
+// ---------------------------------------------------------------- verify (after every build step)
+async function verifyCmd() {
+  const sol = opt.solution || project?.solution?.uniqueName;
+  if (!sol) fail("--solution required (or solution.uniqueName in .pp/project.json)");
+  const since = opt.since || new Date(Date.now() - 24 * 3600000).toISOString();
+  const prefix = (project?.solution?.prefix || "").toLowerCase();
+  const sr = (await dvOk("GET", `solutions?$select=solutionid&$filter=uniquename eq '${sol}'`)).json.value;
+  if (!sr.length) fail(`solution ${sol} not found`);
+  const comps = (await dvOk("GET", `solutioncomponents?$select=objectid,componenttype,rootcomponentbehavior&$filter=_solutionid_value eq ${sr[0].solutionid}`)).json.value;
+  const inSol = new Set(comps.map((c) => c.objectid.toLowerCase()));
+  const tablesWithAll = new Set(comps.filter((c) => c.componenttype === 1 && c.rootcomponentbehavior === 0).map((c) => c.objectid.toLowerCase()));
+  const findings = [], checked = [];
+  const ent = (await dvOk("GET", "EntityDefinitions?$select=LogicalName,MetadataId,ModifiedOn,IsManaged,IsCustomEntity,ObjectTypeCode&$filter=IsCustomEntity eq true")).json.value;
+  const byName = Object.fromEntries(ent.map((e) => [e.LogicalName, e]));
+  const changedTables = ent.filter((e) => !e.IsManaged && e.ModifiedOn >= since);
+  const extra = opt.tables ? String(opt.tables).split(",") : [];
+  const tableCovers = (logical) => { const e = byName[logical]; return e && tablesWithAll.has(e.MetadataId.toLowerCase()); };
+  const add = (kind, name, id, member, owner) => {
+    checked.push({ kind, name });
+    if (!member) findings.push({ check: "solution", kind, name, id, fix: `ppdv solution add --solution ${sol} --id ${id} --type <component type> --required --apply` });
+    if (prefix && owner && !owner.toLowerCase().startsWith(prefix + "_")) findings.push({ check: "prefix", kind, name, expected: `${prefix}_…` });
+  };
+  for (const e of changedTables) add("table", e.LogicalName, e.MetadataId, inSol.has(e.MetadataId.toLowerCase()), e.LogicalName);
+  for (const tn of new Set([...changedTables.map((e) => e.LogicalName), ...extra])) {
+    const attrs = (await dv("GET", `EntityDefinitions(LogicalName='${tn}')/Attributes?$select=LogicalName,MetadataId,ModifiedOn,IsCustomAttribute,IsManaged&$filter=IsCustomAttribute eq true`)).json?.value || [];
+    for (const a of attrs.filter((a) => !a.IsManaged && a.ModifiedOn >= since && !a.LogicalName.endsWith("_base")))
+      add("column", `${tn}.${a.LogicalName}`, a.MetadataId, inSol.has(a.MetadataId.toLowerCase()) || tableCovers(tn), a.LogicalName);
+  }
+  const rows = async (q) => (await dv("GET", q)).json?.value || [];
+  // only judge changes made by the signed-in user (the build), not platform/background updates
+  const me = opt.user || (await dvOk("GET", "WhoAmI")).json.UserId;
+  const mine = `modifiedon ge ${since} and _modifiedby_value eq ${me}`;
+  const recent = `ismanaged eq false and ${mine}`;
+  for (const f of await rows(`systemforms?$select=formid,name,objecttypecode&$filter=${recent}`)) add("form", `${f.objecttypecode}: ${f.name}`, f.formid, inSol.has(f.formid) || tableCovers(f.objecttypecode));
+  for (const v of await rows(`savedqueries?$select=savedqueryid,name,returnedtypecode&$filter=${recent}`)) add("view", `${v.returnedtypecode}: ${v.name}`, v.savedqueryid, inSol.has(v.savedqueryid) || tableCovers(v.returnedtypecode));
+  for (const a of await rows(`appmodules?$select=appmoduleid,name,uniquename&$filter=${recent}`)) add("app", a.name, a.appmoduleid, inSol.has(a.appmoduleid), a.uniquename);
+  for (const r of await rows(`roles?$select=roleid,name&$filter=${recent} and _parentroleid_value eq null`)) add("role", r.name, r.roleid, inSol.has(r.roleid));
+  for (const w of await rows(`webresourceset?$select=webresourceid,name&$filter=${recent}`)) add("web resource", w.name, w.webresourceid, inSol.has(w.webresourceid), w.name);
+  for (const c of await rows(`customcontrols?$select=customcontrolid,name&$filter=${recent}`)) add("pcf control", c.name, c.customcontrolid, inSol.has(c.customcontrolid), c.name);
+  for (const b of await rows(`bots?$select=botid,name,schemaname&$filter=${recent}`)) add("copilot agent", b.name, b.botid, inSol.has(b.botid), b.schemaname);
+  for (const c of await rows(`connectionreferences?$select=connectionreferenceid,connectionreferencelogicalname&$filter=${recent}`)) add("connection reference", c.connectionreferencelogicalname, c.connectionreferenceid, inSol.has(c.connectionreferenceid), c.connectionreferencelogicalname);
+  const flows = await rows(`workflows?$select=workflowid,name,statecode,category&$filter=category eq 5 and ${recent}`);
+  for (const w of flows) add("flow", w.name, w.workflowid, inSol.has(w.workflowid));
+  // flow triggers for flows that are on and in the solution
+  const solFlows = await rows(`workflows?$select=workflowid,name,statecode&$filter=category eq 5 and statecode eq 1`);
+  for (const w of solFlows.filter((w) => inSol.has(w.workflowid))) {
+    const tr = await checkTrigger(w.workflowid);
+    if (tr.issues?.length) findings.push({ check: "flow trigger", kind: "flow", name: w.name, issues: tr.issues, fix: tr.fix });
+  }
+  // environment health
+  const stuck = (await dvOk("GET", `asyncoperations?$select=asyncoperationid&$filter=statuscode eq 0 and createdon lt ${new Date(Date.now() - 10 * 60000).toISOString()}&$top=5`)).json.value.length;
+  const warnings = stuck ? ["system jobs waiting more than 10 minutes: run `ppdv health`; if it persists, flows and async plug-ins may not run"] : [];
+  return out({ ok: !findings.length, solution: sol, since, checked: checked.length, components: checked, findings, warnings }, findings.length ? 1 : 0);
 }
 
 async function stateCmd(sub) {
@@ -567,7 +666,8 @@ function probe() {
     pacOrg: pacBin ? (run(pacBin, ["org", "who"]) || "").match(/Org URL:\s+(\S+)/)?.[1] || null : null,
     az: run("az", ["account", "show", "--query", "user.name", "-o", "tsv"]),
     dotnetSdks: (run("dotnet", ["--list-sdks"]) || "").split("\n").filter(Boolean).map((l) => l.split(" ")[0]),
-    dataverseCli: run("dataverse", ["--version"]),
+    dataverseCli: (run("npm", ["list", "-g", "@microsoft/dataverse", "--depth=0"]) || "").match(/@microsoft\/dataverse@(\S+)/)?.[1] || (run("dataverse", ["--help"]) !== null ? "present" : null), // `dataverse --version` exits 1
+    pythonDataverseSdk: run(existsSync(".venv/bin/python") ? ".venv/bin/python" : "python3", ["-c", "from importlib.metadata import version; print(version('PowerPlatform-Dataverse-Client'))"]),
     claude: run("claude", ["--version"]),
     copilot: run("copilot", ["--version"]),
   };
@@ -594,4 +694,4 @@ function probe() {
   out({ ok: true, project: projectPath, tools, microsoftPlugins: microsoft, warnings: [pacMismatch, tools.az ? null : "az not signed in", tools.dotnetSdks.some((v) => +v.split(".")[0] >= 10) ? null : ".NET 10 SDK missing (canvas-apps, pac copilot mcp)"].filter(Boolean) });
 }
 
-main().catch((e) => fail(e.message));
+main().catch((e) => { if (e === EXIT) return; try { fail(e.message); } catch {} });

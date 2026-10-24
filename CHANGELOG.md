@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.0 (2026-10-24)
+- `ppdv verify`: after every build step checks that new/changed components (yours only) are in the solution (incl. table subcomponents), use the publisher prefix, flow triggers are registered; health as a warning. Verified live (pass on the E2E build, catches a component outside the solution with a foreign prefix).
+- Raw `ppdv request` writes need `--reason`, are logged to `.pp/state/api-writes.jsonl`, record PATCH/PUT are read back, and the hook asks the user first.
+- Precedence rule (our project rules vs Microsoft's how-to), project `standards` in `.pp/project.json`, known-conflict tables in build skills, one approval per change with ids and `/app-builder` unattended mode.
+- Fix: piped toolkit output over 64 KB was truncated.
+- Fix: probe reported the Dataverse CLI missing (`dataverse --version` exits 1); also reports the Python SDK.
+- Eval `build-then-verify` (slow): approved build → Microsoft dv-metadata → `ppdv verify` before done (passes).
+
 ## 2.8.1 (2026-10-22)
 - One document layout for all agents (`delivery-method` rule 5): the live app-analyst test wrote its impact analysis to a different folder than the agent file said.
 - app-analyst verified live on the E2E Test app (as-built + CR-1 impact, read-only, ~9 min).

@@ -13,6 +13,7 @@
   "solution": { "uniqueName": "ContosoCore", "publisher": "Contoso", "prefix": "con" },
   "sourceControl": "git-integration | pac-unpack",
   "deployment": "pipelines | github-actions | azure-devops",
+  "standards": { "newLook": true, "generativePages": "when-asked", "personaRoles": true, "formHeader": ["status"], "language": null },
   "docs": "docs/"
 }
 ```

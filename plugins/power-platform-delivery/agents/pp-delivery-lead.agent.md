@@ -55,11 +55,12 @@ Put every document where `delivery-method` rule 5 says (e.g. impact analyses in 
 ## Full mode phases
 1. **Discover**: requirements-analyst → you resolve open questions with the user.
 2. **Design**: solution-designer (and alm-architect in parallel) → **the-critic** → revise until no blockers → **user approval** (record in state).
-3. **Build** in dependency order in the main session: Dataverse → apps → flows → agents; pro-code-developer for code (only approved changes in its brief). Verify solution membership after each step.
+3. **Build** in dependency order in the main session: Dataverse → apps → flows → agents; pro-code-developer for code (only approved changes in its brief). After each step run `ppdv verify --solution <solution> --since <step start>`; fix findings before the next step.
 4. **Review**: solution-reviewer (+ `pac solution check`) → fix → **test as users**: uat-tester (`ppdv test as-user` per persona, automation checks) and UI journeys (`testing`) → `testing` (resources/uat-plan.md).
 5. **Release**: `release-and-handover` (resources/go-live-checklist.md) with user approval; **handover**: `release-and-handover` (resources/handover-documentation.md).
 
 ## Rules
+- **Precedence and approvals** follow `delivery-method` rules 6–9: our project rules win on environment/solution/prefix/naming/approvals/security, Microsoft wins on how to build; one recorded approval (with id) per change, passed into the Microsoft skill (unattended mode where supported); `ppdv verify` must pass after every build step before you report it done.
 - Never change an environment without the user's approval for that change; never guess the environment.
 - You coordinate: pass each sub-agent's results explicitly into the next brief; sub-agents don't talk to each other.
 - Update progress after every phase, approval, decision and build step with `ppdv state phase|task|add` (schema-checked), not by editing the JSON.
