@@ -1,0 +1,31 @@
+{
+  "about": "Free routing check (scripts/route-check.mjs): each prompt's expected skills/agents must rank in the top K by description; notTop must not rank first. Microsoft skills come from evals/microsoft-skills.json.",
+  "topK": 5,
+  "maxOverlap": 0.5,
+  "cases": [
+    { "prompt": "add a whole number column to the account table", "expect": ["dataverse-build", "dataverse:dv-metadata"] },
+    { "prompt": "create a new table for equipment with a lookup to account", "expect": ["dataverse-build", "dataverse:dv-metadata"] },
+    { "prompt": "build a model-driven app for managing tickets", "expect": ["model-driven-build", "model-apps:app-builder"] },
+    { "prompt": "add a view sorted by due date and a business process flow", "expect": ["model-driven-build"] },
+    { "prompt": "build a canvas app for field technicians", "expect": ["canvas-build", "canvas-apps:canvas-app"] },
+    { "prompt": "the cloud flow never triggers when a row is created", "expect": ["flow-build"] },
+    { "prompt": "create a Power Automate flow that sends an email when a case is resolved", "expect": ["flow-build"] },
+    { "prompt": "build a Copilot Studio agent that answers HR questions", "expect": ["copilot-studio-build"] },
+    { "prompt": "write a C# plug-in that validates the order before save", "expect": ["pro-code", "agent:pro-code-developer"] },
+    { "prompt": "build a PCF control for a star rating", "expect": ["pro-code", "pcf:pcf"] },
+    { "prompt": "give the support agents access to the new table", "expect": ["security-roles"] },
+    { "prompt": "remove delete privilege from the sales role and assign it to a user", "expect": ["security-roles"] },
+    { "prompt": "deploy our solution to the test environment", "expect": ["alm"] },
+    { "prompt": "move the solution from dev to test", "expect": ["alm"] },
+    { "prompt": "set up a pipeline to release managed solutions to production", "expect": ["alm"] },
+    { "prompt": "remove a column that is in a managed solution in production", "expect": ["platform-changes"] },
+    { "prompt": "Microsoft deprecated the editable grid, what do we need to change", "expect": ["platform-changes"] },
+    { "prompt": "test the app as each persona before UAT sign-off", "expect": ["testing", "agent:uat-tester"] },
+    { "prompt": "run solution checker and review governance before go-live", "expect": ["quality-review"] },
+    { "prompt": "write the handover documentation and go-live checklist", "expect": ["release-and-handover"] },
+    { "prompt": "do a fit-gap and design the data model and security model", "expect": ["solution-design"] },
+    { "prompt": "the users can't open the app since yesterday, investigate the incident", "expect": ["agent:support-engineer"] },
+    { "prompt": "document how the existing app works before we change it", "expect": ["agent:app-analyst"] },
+    { "prompt": "build a Power Pages site for customers", "expect": ["power-pages:create-site"], "notTop": ["model-driven-build", "canvas-build", "dataverse-build"] }
+  ]
+}

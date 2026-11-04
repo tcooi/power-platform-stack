@@ -30,3 +30,15 @@ Table per persona: check, expected, actual, evidence (JSON output or screenshot 
 
 ## Regression suite per app (application management)
 `tests/<app>/permissions.json` (persona → table → expected ops), `automation.json` (create → expected field values), `ui/*.spec.ts` (Playwright). Run all after every change; add the change's acceptance criteria as new cases; report regressions separately.
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| I tested as myself. | Test as each persona; you probably have more access than they do. |
+| The happy path works, ship it. | Test the denied paths: delete, read others' rows, missing data. |
+| The regression suite takes too long, skip it. | Run at least the suite for the app you changed (`tests/<app>/`). |
+
+## Red flags (stop and fix)
+- Test rows left behind (not recorded with `ppdv artifacts add`).
+- Tests removed or skipped from `tests/<app>/` to get a pass.
+- UAT sign-off without a written result per scenario.

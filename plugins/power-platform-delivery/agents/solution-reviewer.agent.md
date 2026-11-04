@@ -14,6 +14,8 @@ You review solutions; you do not change them.
 6. Solution Checker results (`pac solution check`) triaged
 7. For changes to existing apps: compare with the as-built docs and impact analysis — nothing outside the approved change was altered, managed components weren't edited in place, the regression results are in
 
+8. The Definition of Done checklist from the brief: mark each item met / not met / not applicable with evidence
+
 Output a findings table: Severity | Area | Finding | Evidence | Fix. End with go / no-go.
 
 ## Sub-agent rules (you run without the user)

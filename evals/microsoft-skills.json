@@ -1,0 +1,281 @@
+{
+  "note": "Snapshot of Microsoft skill descriptions for route-check. Refresh after reviewing plugin updates.",
+  "plugins": {
+    "model-apps": "2.19.0",
+    "power-automate": "3.2.1",
+    "canvas-apps": "3.1.1",
+    "power-pages": "2.9.0",
+    "pcf": "1.0.0",
+    "dataverse": "1.16.1"
+  },
+  "skills": [
+    {
+      "name": "model-apps:app-builder",
+      "description": "Builds and edits a model-driven Power Apps app from a natural-language intent — tables, columns, relationships, adaptive forms with sub-grids, views, Choice-column charts, business rules, business process flows, generative page intents for overview/dashboard surfaces, and an app module + sitemap. Runs an interactive authoring flow with plan approval and can download a deployed app back into an editable spec to change it. Use when the user says \"build an app for X\", \"create a model-driven app\", \"make me an app to manage Y\", \"add a business process flow\", or \"edit/add to my app\". Do not use it for a generic web or React app or website, Power Pages, canvas apps, or Power Automate, or when the user rules out Power Platform, Dataverse, or model-driven apps (for example \"no Power Platform\"). This skill stands alone and does not require /genpage — but for a standalone generative page added to an app that already exists, use /genpage instead."
+    },
+    {
+      "name": "model-apps:genpage",
+      "description": "Creates, updates, and deploys Power Apps generative pages for model-driven apps using React v17, TypeScript, and Fluent UI V9. Orchestrates specialist agents for planning, entity creation, and code generation. Use it when user asks to build, retrieve, or update a page in an existing Microsoft Power Apps model-driven app. Use it when user mentions \"generative page\", \"page in a model-driven\", or \"genux\". Do not use it for a generic or standalone React or web app, website, or dashboard (including a Power Apps code app), for Power Pages, canvas apps, or Power Automate, or when the user rules out Power Platform, Dataverse, or model-driven apps (for example \"no Power Platform\"). A generative page only runs inside a model-driven app, and this skill cannot scaffold a standalone project. This skill stands alone and does not require /app-builder — but if the user wants a whole app built (tables, forms, views, sitemap) rather than pages for an app that already exists, use /app-builder instead."
+    },
+    {
+      "name": "model-apps:report-issue",
+      "description": "Use this skill when the user wants to \"report a bug\", \"file an issue\", \"report an issue\", \"submit a bug report\", or report any problem with the model-apps plugin to the GitHub repository."
+    },
+    {
+      "name": "model-apps:telemetry",
+      "description": ""
+    },
+    {
+      "name": "power-automate:browse-flows",
+      "description": "Browse Power Automate environments and flows interactively. Use when the user wants to browse, list, or explore their flows and environments."
+    },
+    {
+      "name": "power-automate:build-flow",
+      "description": "Autonomously build a complete Power Automate flow from a description. Use when you need to generate a full flow definition and create it."
+    },
+    {
+      "name": "power-automate:create-flow",
+      "description": "Guided flow creation wizard. Use when the user wants to create a new flow interactively."
+    },
+    {
+      "name": "power-automate:debug-flow",
+      "description": "Debug a failed Power Automate flow run. Use when a flow failed, has errors, or the user wants to troubleshoot a run."
+    },
+    {
+      "name": "power-automate:diagnose-flow",
+      "description": "Deep autonomous diagnosis of a failed flow run. Provide environment, flow, and run IDs. Use when the user asks to diagnose or deeply investigate a specific failed flow run."
+    },
+    {
+      "name": "power-automate:manage-desktop-flows",
+      "description": "Manage and run Power Automate Desktop (RPA) flows and machine groups. Use when the user asks about desktop flows, RPA, or machine groups."
+    },
+    {
+      "name": "power-automate:manage-flows",
+      "description": "Manage flow lifecycle - publish, test, batch operations, inventory reports. Use when the user asks to publish, test, batch manage, or get an inventory of flows."
+    },
+    {
+      "name": "power-automate:report-issue",
+      "description": "Use this skill when the user wants to \"report a bug\", \"file an issue\", \"report an issue\", \"submit a bug report\", or report any problem with the power-automate plugin to the GitHub repository."
+    },
+    {
+      "name": "power-automate:route-environments",
+      "description": "Check Power Platform environment routing status and understand default environment resolution. Use when the user asks about environment routing, developer environments, or new maker landing. Routing is configured in the admin center, not here. NOT for listing flows or managing connections."
+    },
+    {
+      "name": "power-automate:setup",
+      "description": "Set up Power Automate CLI prerequisites. Use when the user is new, something isn't working, or they need help getting started."
+    },
+    {
+      "name": "power-automate:telemetry",
+      "description": "Use this skill when the user wants to enable, disable, turn on or off, opt out of, opt in to, or check the status of power-automate telemetry / usage data. Triggers: \"disable telemetry\", \"turn off telemetry\", \"opt out of telemetry\", \"stop collecting usage data\", \"enable telemetry\", \"telemetry status\"."
+    },
+    {
+      "name": "canvas-apps:add-data-source",
+      "description": "Guide the user to add a data source, connection, or API connector to a Canvas App via Power Apps Studio, then verify and continue. USE WHEN the user asks to add a data source, add a connection, add an API, add a connector, connect to SharePoint / Dataverse / SQL / Excel / OneDrive / Teams / Office 365, or any similar request to make new data available to the app. DO NOT USE WHEN the user is asking to list or describe existing data sources — call list_data_sources or list_apis directly instead."
+    },
+    {
+      "name": "canvas-apps:canvas-app",
+      "description": "Creates or edits a Power Apps Canvas App through the Canvas Authoring MCP coauthoring session. Handles staged experience design, direct and partitioned targeted edits, planned multi-screen changes, responsive layout, and compile-error convergence. Trigger on requests to create, build, generate, modify, update, change, fix, or edit a Canvas App or .pa.yaml files."
+    },
+    {
+      "name": "canvas-apps:configure-canvas-mcp",
+      "description": "Configure the Canvas Authoring MCP server for the current coauthoring session. Use before starting to edit a canvas app with the /canvas-app skill if not already connected. USE WHEN \"configure MCP\", \"set up MCP server\", \"MCP not working\", \"connect Canvas Apps MCP\", \"canvas-authoring not available\", \"MCP not configured\", \"set up canvas apps\"."
+    },
+    {
+      "name": "canvas-apps:report-issue",
+      "description": "Use this skill when the user wants to \"report a bug\", \"file an issue\", \"report an issue\", \"submit a bug report\", or report any problem with the canvas-apps plugin to the GitHub repository."
+    },
+    {
+      "name": "power-pages:activate-site",
+      "description": "Activates and provisions a Power Pages website in a Power Platform environment via the Power Platform REST API. Use when the user wants to activate, provision, turn on, or enable a Power Pages website or portal."
+    },
+    {
+      "name": "power-pages:add-ai-webapi",
+      "description": "Integrates Power Pages generative-AI summarization APIs (PREVIEW) into a Single Page Application (SPA) site — the Search Summary API and the Data Summarization API — on any record-detail or list page. Generates per-target service code (CSRF-handled) and AI site settings; delegates Web API settings, table permissions, and web roles to `/integrate-webapi` and `/create-webroles`. Use whenever a user wants AI/Copilot output that condenses Dataverse content on a Power Pages site — an AI summary, AI-generated overview or \"key insights\" across a record or list, a search-results summary, a case/incident summary, or recommendation-chip refinement — even when phrased as \"AI-generated paragraph\", \"insights\", or \"overview\". Do NOT use for: generative pages in model-driven apps (use the model-apps `genpage` skill), Copilot Studio agents/chatbots, summarizing documents or PDFs, Power BI dashboards, plain keyword search with no AI summary, or plain Dataverse CRUD (use `/integrate-webapi`)."
+    },
+    {
+      "name": "power-pages:add-cloud-flow",
+      "description": "Integrates Power Automate cloud flows into a Power Pages site. Lists available flows, suggests relevant ones based on intent, identifies scenarios and web roles, creates metadata files, and generates client-side code to call flows. Handles both new flow registration and adding already-registered flows to additional pages without re-creating metadata. Use when the user wants to add, connect, register, or link a Power Automate cloud flow to their site."
+    },
+    {
+      "name": "power-pages:add-localization",
+      "description": "Adds or extends multilingual localization in a Power Pages code-site SPA. Use whenever the user asks to translate, localize, internationalize, support multiple languages, add a language selector, add locale routes, repair an i18n setup, or add languages to an existing React, Vue, Angular, or Astro Power Pages site."
+    },
+    {
+      "name": "power-pages:add-sample-data",
+      "description": "Populates Dataverse tables with sample records for testing and demoing a Power Pages site. Use when the user wants to add sample data, seed data, generate test records, or insert demo data into their tables."
+    },
+    {
+      "name": "power-pages:add-seo",
+      "description": "Adds SEO essentials to a Power Pages code site, including robots.txt, sitemap.xml, meta tags, Open Graph tags, and favicon configuration. Use when the user wants to improve search engine optimization or make their site more searchable."
+    },
+    {
+      "name": "power-pages:add-server-logic",
+      "description": "Creates, edits, and manages Power Pages Server Logic files — server-side JavaScript that runs securely on the Power Pages runtime. Orchestrates the full lifecycle: gathering requirements, fetching documentation, implementing code, configuring site settings, and deploying. Use when the user wants to add server-side code, create API endpoints, or move logic from the browser to the server in their Power Pages site."
+    },
+    {
+      "name": "power-pages:audit-permissions",
+      "description": "Audits existing table permissions on a Power Pages site by analyzing them against site code and Dataverse metadata, then GRADES the configuration with deterministic 1–5 scores across 3 security/usability/correctness categories (9 dimensions). Detection is anchored by a recurring-issue catalog so findings and severities stay consistent run-to-run. Generates an HTML report with an at-a-glance verdict and per-category scores in the Overview plus a single list of **major/minor** issues (each major issue labelled permissions-only or upstream-caused with a short justification), and suggested fixes. Use when the user wants to review, verify, check, score, or grade table permissions for security issues."
+    },
+    {
+      "name": "power-pages:configure-env-variables",
+      "description": "Configures environment variables for Power Pages site settings to support ALM across environments. Creates environment variable definitions in Dataverse, guides the user through linking site settings to those variables via the Power Pages Management app, adds the variables to the solution, and generates a deployment-settings.json file with per-stage override values. Use when asked to: \"configure environment variables\", \"add env vars\", \"set up deployment variables\", \"make site settings environment-specific\", \"configure ALM variables\", \"set up env-specific settings\", \"add deployment settings\", \"configure per-environment settings\"."
+    },
+    {
+      "name": "power-pages:create-site",
+      "description": "Creates a new Power Pages code site (SPA) from a curated template or from scratch using React, Angular, Vue, or Astro. Guides through the full process from initial concept to deployed site: requirements discovery, template selection or scaffolding, component planning, design, implementation, validation, and deployment. Use when the user wants to create, build, use a template for, or scaffold a new Power Pages website or portal."
+    },
+    {
+      "name": "power-pages:create-webroles",
+      "description": "Creates and configures web roles for a Power Pages code site. Web roles control access and permissions for site users, including authenticated and anonymous roles. Use when the user wants to create, add, set up, or manage web roles for their site."
+    },
+    {
+      "name": "power-pages:deploy-pipeline",
+      "description": "Triggers a Power Platform Pipeline deployment run for a Power Pages solution. Selects a target stage, validates the package, optionally configures deployment settings (environment variables, connection references), then deploys and polls for completion. Use when asked to: \"deploy pipeline\", \"run pipeline\", \"trigger deployment\", \"deploy to staging\", \"deploy to production\", \"run power platform pipeline\", \"deploy solution via pipeline\", \"promote solution\", \"push to staging\", \"push to production\"."
+    },
+    {
+      "name": "power-pages:deploy-site",
+      "description": "Deploys an existing Power Pages code site to a Power Pages environment using PAC CLI. Handles tooling verification, authentication, environment confirmation, building, and uploading. Use when the user wants to deploy, upload, or publish their code site."
+    },
+    {
+      "name": "power-pages:diagnose-deployment",
+      "description": "Surfaces PAC CLI upload errors and Dataverse async operation errors, pattern-matches against a known failure catalog, and optionally auto-fixes identified issues. Use when asked to: \"diagnose deployment\", \"debug deployment\", \"deployment failed\", \"show deployment errors\", \"fix deployment issues\", \"show upload logs\", \"why did my deploy fail\", or \"troubleshoot upload\"."
+    },
+    {
+      "name": "power-pages:ensure-pipelines-host",
+      "description": "Ensures the tenant has a usable Power Platform Pipelines host environment before any pipeline operation runs. Detects host state via the same resolution order as the Power Apps UI (org-db setting → BAP env metadata → default-custom-host setting); if any existing host (Platform or Custom) is found, uses it. If no host is bound to the source env, provisions a new **Platform Host** (recommended, idempotent) or a **Custom Host** via the BAP env-create API with the `D365_ProjectHost` template, or guides the user through PPAC install / `New custom host` (manual fallbacks). Polls lifecycle operations, verifies the host responds to Pipelines API calls, writes a host-check artifact other ALM skills consume. Use when asked to: \"set up pipelines host\", \"ensure pipelines host\", \"no pipelines host\", \"install pipelines\", \"create pipelines host\", \"provision platform host\", \"provision custom host\". Also invoked transparently by /power-pages:setup-pipeline when its host discovery step finds nothing."
+    },
+    {
+      "name": "power-pages:exceptional-web-design",
+      "description": "Reviews the design of an existing Power Pages site - a live URL or a local project folder - and recommends what to change, without modifying anything. Captures up to eight key pages at desktop and mobile, scores them against the plugin's design rubric (first impression, hierarchy, narrative, copy, trust, brand, responsive and accessible design, motion, detail), and returns prioritized, concrete recommendations. Use when the user wants a design review, critique, or audit of a site, asks how to make an existing site look better, more polished, or more impressive, or asks why it looks generic or dated."
+    },
+    {
+      "name": "power-pages:export-solution",
+      "description": "Exports a Dataverse solution containing Power Pages site components as a zip file, ready for deployment to another environment. Use when asked to: \"export solution\", \"download solution\", \"export managed\", \"export unmanaged\", \"package for deployment\", \"create solution zip\", \"export site package\", or \"build deployment artifact\"."
+    },
+    {
+      "name": "power-pages:force-link-environment",
+      "description": "Force-links a development or target environment to a Power Platform Pipelines host, overriding any existing association with a previous host. Use when creating a deploymentenvironments record fails with \"this environment is already associated with another pipelines host\", or when intentionally migrating an environment from one host to another (e.g., Platform Host → Custom Host, or between two Custom Hosts). Calls the documented `ManageEnvironmentStamp` Dataverse action (the API behind the \"Force Link\" button in the Deployment Pipeline Configuration app). DESTRUCTIVE to the previous host: makers lose access to any pipelines in that host that used this environment. Reversible by running Force Link from the previous host. Use when asked to: \"force link environment\", \"force-link to new host\", \"switch pipelines host\", \"environment already associated with another host\", \"take over pipelines association\", \"relink environment to host\"."
+    },
+    {
+      "name": "power-pages:import-solution",
+      "description": "Imports a Dataverse solution zip into a target environment, with optional staged import for dependency checking before committing. Use when asked to: \"import solution\", \"install solution\", \"deploy solution zip\", \"push solution to environment\", \"deploy to staging\", \"deploy to production\", or \"install site in new environment\"."
+    },
+    {
+      "name": "power-pages:integrate-backend",
+      "description": "Analyzes the user's business problem and recommends the right backend integration approach — Web API, AI Web API (generative summaries / grounded search), Server Logic, Cloud Flows, or a combination — for a Power Pages site, then routes to the appropriate specialized skill. Use when the user wants to add backend integration, connect to data, add AI summaries, or needs help deciding which backend approach to use."
+    },
+    {
+      "name": "power-pages:integrate-webapi",
+      "description": "Integrates Power Pages Web API into a site's frontend code with proper permissions and deployment. Orchestrates the full integration lifecycle: code integration, table permissions setup, and deployment for Dataverse CRUD operations. Use when the user wants to add Web API calls, connect to Dataverse, or add data fetching to their frontend."
+    },
+    {
+      "name": "power-pages:manage-firewall",
+      "description": "Inspects and configures the web application firewall (WAF) in front of a Power Pages production site. Lists the current state, recommends enabling protection when it is off, and walks the user through adding, updating, or removing custom rules — IP blocks, country blocks, path blocks, and rate limits. Use when the user wants to turn on WAF, block traffic by IP or country, rate-limit login or signup pages, protect pages from brute-force attempts, restrict access to specific paths, review the current firewall configuration, or asks \"is my site protected against bots / common web attacks?\" — even if they say \"add rate limit\" or \"protect login page\" without mentioning \"firewall\" or \"WAF\"."
+    },
+    {
+      "name": "power-pages:manage-headers",
+      "description": "Inspects and configures the security headers a Power Pages site sends to browsers — Content Security Policy, frame and clickjacking protection, cross-origin sharing, cookie behavior, and related site settings. Identifies gaps and walks the user through fixes. Use when the user wants to review headers, fix CSP errors, allow embedding in another site, control cross-origin access, harden cookie settings, or asks \"are my browser settings safe?\", \"fix my CSP\", \"set up CORS\" — even if they only mention a specific header name without saying \"security headers\"."
+    },
+    {
+      "name": "power-pages:migrate-bootstrap",
+      "description": "Migrates a traditional Power Pages site from Bootstrap 3 to Bootstrap 5. Downloads the site, runs the pac pages bootstrap-migrate engine, reviews the change report, applies AI-assisted fixes for the residual hierarchy/CSS changes the engine only flags, uploads the migrated site (which auto-enables the Bootstrap 5 runtime flag), verifies the flag, and validates. Use when the user wants to upgrade an older Bootstrap-3 portal to Bootstrap 5. NOT for code sites (React/Vue/Angular/Astro) — those are never Bootstrap-3."
+    },
+    {
+      "name": "power-pages:migrate-webapi-selectall",
+      "description": "Reviews and migrates deprecated wildcard (*) values in Power Pages Web API fields site settings to least-privilege explicit Dataverse columns. Use whenever a user mentions Web API wildcard or select-all remediation, fields settings containing *, data-exposure review, wildcard deprecation readiness, or Web API failures after wildcard retirement. Applies to both traditional sites using HTML, CSS, JavaScript, Liquid, and downloaded YAML, and SPA sites using React, Vue, Angular, Astro, or TypeScript. The agent must inspect every source Web API call and consumer, report exact fixes for every wildcard, report every already-explicit configuration, apply approved edits, and verify no wildcard remains."
+    },
+    {
+      "name": "power-pages:plan-alm",
+      "description": "Creates an ALM (Application Lifecycle Management) plan for deploying a Power Pages site across environments. Gathers your promotion strategy, target environments, and approval requirements upfront, then generates a visual HTML plan document for your review and approval. **plan-alm does not deploy anything itself** — it is a planner. After you approve the plan, run the individual ALM skills (setup-solution, setup-pipeline, deploy-pipeline, or export-solution/import-solution); each detects the approved plan and executes the right step in order, keeping the plan updated as it runs. Use when asked to: \"plan my alm\", \"set up alm\", \"create deployment plan\", \"plan my deployments\", \"help me deploy to multiple environments\", \"set up promotion strategy\", \"create cicd plan\", \"plan site promotion\", \"help me go to production\", \"set up pipeline for my site\"."
+    },
+    {
+      "name": "power-pages:report-issue",
+      "description": "Use this skill when the user wants to \"report a bug\", \"file an issue\", \"report an issue\", \"submit a bug report\", or report any problem with the power-pages plugin to the GitHub repository."
+    },
+    {
+      "name": "power-pages:scan-code",
+      "description": "Scans a Power Pages site project for security issues in source code and dependencies. Runs static analysis and dependency scanning, then surfaces findings by category (code patterns, vulnerable packages, secrets, license issues). Use when the user wants to review code for security problems, check for vulnerable packages, find hard-coded secrets, run a code scan, or asks \"is my code safe?\", \"check my dependencies\", \"find security issues in my source\" — even if they say \"audit my code\" without mentioning specific tools."
+    },
+    {
+      "name": "power-pages:scan-site",
+      "description": "Runs a security scan on a deployed Power Pages site, fetches the latest scan report, and produces a plain-language summary. Scans the live site's public surface for vulnerabilities and surfaces issues by severity. Use when the user wants to scan, check, test, audit, or assess a published site, find vulnerabilities on production, view the latest scan report, see previous scan results, run a security audit, or asks \"how safe is my live site?\", \"is my site vulnerable?\", \"audit my production site\" — even if they say \"find issues\" or \"check for problems\" without mentioning \"scan\" or \"security\"."
+    },
+    {
+      "name": "power-pages:security-review",
+      "description": "Runs a guided, end-to-end security review of a Power Pages site and consolidates every finding into one HTML report covering source code and dependencies, the live site, browser headers, firewall, authentication, and role-based permissions. Use when the user wants a full security review, a release-readiness check before publishing, a code-and-config check during development, live site monitoring, or asks open-ended questions like \"review my site security\", \"is my site safe to ship\", \"do a security check\", \"monitor my site\" — even if they do not name the individual checks."
+    },
+    {
+      "name": "power-pages:setup-auth",
+      "description": "Use when the user asks to \"set up authentication\", \"add login\", \"add logout\", \"add sign in\", \"enable auth\", \"add role-based access\", \"add authorization\", \"protect routes\", \"configure identity provider\", \"configure Entra ID\", \"configure Entra External ID\", \"configure OpenID Connect\", \"add OIDC\", \"set up SAML\", \"set up WS-Federation\", \"set up local login\", \"add Facebook login\", \"add Google sign in\", \"add Microsoft Account\", or otherwise wants to set up authentication (login/logout) and role-based authorization for their Power Pages code site using any supported identity provider. Also sets up the IdP app registration for OIDC providers (Okta, Auth0, Entra External ID, and other OIDC) -- reads the provider's docs first, then either guides the user through the provider's console or, when the provider supports it, configures it for the user -- and wires the client ID, authority, and claims mapping into Power Pages."
+    },
+    {
+      "name": "power-pages:setup-datamodel",
+      "description": "Creates Dataverse tables, columns, and relationships for a Power Pages site based on a data model proposal. Use when the user wants to set up the data model, create database tables, or build the Dataverse schema for their site."
+    },
+    {
+      "name": "power-pages:setup-pipeline",
+      "description": "Sets up a Power Platform Pipeline for automated Power Pages deployments. Power Platform Pipelines is Microsoft's native CI/CD tool built into the Power Platform — no external infrastructure required. Use when asked to: \"set up ci/cd\", \"create pipeline\", \"setup pipeline\", \"set up power platform pipelines\", \"create power pipelines\", \"automate deployments\", \"set up automated deployment\", \"create deployment pipeline\", \"use power pipelines\". Also handles: \"set up github actions\" or \"set up azure devops pipeline\" (shows coming-soon guidance for those platforms)."
+    },
+    {
+      "name": "power-pages:setup-solution",
+      "description": "Creates a Dataverse publisher and solution, then adds Power Pages site components to the solution for ALM and deployment management. Use when asked to: \"create solution\", \"set up solution\", \"add to solution\", \"package site into solution\", \"create publisher\", \"solutionize my site\", or \"set up ALM for my site\"."
+    },
+    {
+      "name": "power-pages:telemetry",
+      "description": "Use this skill when the user wants to enable, disable, turn on or off, opt out of, opt in to, or check the status of power-pages telemetry or its usage data. Triggers: \"disable telemetry\", \"turn off telemetry\", \"opt out of telemetry\", \"stop collecting usage data\", \"enable telemetry\", \"telemetry status\"."
+    },
+    {
+      "name": "power-pages:test-site",
+      "description": "Tests a deployed, activated Power Pages site at runtime using browser-based navigation, page crawling, and API request verification via Playwright. Use when the user wants to test, verify, or smoke-test their deployed site."
+    },
+    {
+      "name": "pcf:pcf",
+      "description": "Builds, tests, diagnoses, upgrades, deploys and verifies Power Apps component framework (PCF) code components for model-driven apps and Power Pages — field and dataset controls, standard and virtual (React) — from Microsoft-maintained templates and recipes pinned to a tested version matrix. Runs quality gates (manifest and host lint, source checks, lint, unit tests, production build), deploys with pac pcf push, verifies registration and form bindings, and guides Power Pages enablement, with guided setup for canvas apps. Use when the user wants to build, fix, upgrade, deploy or check a PCF control or code component, or asks why one fails to build, import, update or render. For a whole page use /model-apps:genpage; for a whole app use /model-apps:app-builder."
+    },
+    {
+      "name": "pcf:report-issue",
+      "description": "Use this skill when the user wants to \"report a bug\", \"file an issue\", \"report an issue\", \"submit a bug report\", or report any problem with the pcf plugin to the GitHub repository."
+    },
+    {
+      "name": "pcf:telemetry",
+      "description": ""
+    },
+    {
+      "name": "dataverse:dv-admin",
+      "description": "Environment-level Dataverse administration — bulk delete, retention/archival, organization settings, OrgDB settings, recycle bin, audit, and the 37 allowlisted PPAC toggles. Use when the user wants to clean up data at scale, configure audit, change environment settings, manage retention policies, or list/cancel ERP batch jobs."
+    },
+    {
+      "name": "dataverse:dv-connect",
+      "description": "One-step setup and connection diagnostics for a Dataverse environment — installs tools, authenticates, registers MCP, writes `.env`, and verifies active profiles and linked ERP endpoints. Use when starting a new project, switching environments, fixing authentication, troubleshooting MCP, or checking existing Dataverse / Finance and Operations connectivity or linkage."
+    },
+    {
+      "name": "dataverse:dv-data",
+      "description": "Record-level CRUD and bulk operations — create, update, delete, upsert, CSV import, multi-table foreign-key loads, AI-generated sample data. Use when the user wants to write, modify, seed, or import data records into Dataverse tables, or plan or perform Finance and Operations (ERP) record writes and DMF package imports."
+    },
+    {
+      "name": "dataverse:dv-metadata",
+      "description": "Dataverse schema authoring and inspection — tables, columns, relationships, forms, and views. Use when the user wants to define, evolve, or inspect the data model — add a column, create a table, set up a lookup, customize a form, build a view, or list existing columns and relationships."
+    },
+    {
+      "name": "dataverse:dv-overview",
+      "description": "Foundational cross-cutting context for Dataverse / Power Platform work — scope and the skill map, the tool-capability reference, the safety rules, and the safe change lifecycle. Use when the user mentions Dataverse, Dynamics 365, Power Platform, CRM, or ERP; load this first for orientation. Specialist skills self-route via their own frontmatter triggers. Finance and Operations / F&O business-data requests also require this skill first, then dv-query for reads."
+    },
+    {
+      "name": "dataverse:dv-query",
+      "description": "Bulk reads, multi-page iteration, and analytics over Dataverse data. Use when the user wants to read, list, filter, aggregate, group, join, or analyze records — including pandas DataFrame workflows and notebook exploration. Also covers ERP (Finance and Operations / F&O) business-data reads and runtime entity, schema, or action discovery; load dv-overview first, then this skill."
+    },
+    {
+      "name": "dataverse:dv-security",
+      "description": "Security-role assignment, user access, application users, business units, and admin self-elevation in Dataverse environments. Use when the user wants to give someone access, grant a role, become an admin, or add a service principal."
+    },
+    {
+      "name": "dataverse:dv-solution",
+      "description": "Dataverse solution lifecycle — create, export, import, promote across environments, and validate deployments. Use when the user wants to package customizations, deploy to another environment, or move work between dev / test / prod."
+    },
+    {
+      "name": "dataverse:erp-xpp",
+      "description": "X++ code development lifecycle for Finance and Operations — scaffold models, author classes, custom services/APIs, and data entities, install matching SDKs, compile deployable packages, deploy packages, synchronize databases, and verify deployed artifacts. Use when the user explicitly requests creating, building, compiling, packaging, deploying, DB-syncing, or verifying X++ customizations, or an end-to-end ERP code change."
+    }
+  ]
+}

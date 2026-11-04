@@ -25,7 +25,7 @@ RETURN: Summary, Artifacts, Assumptions, Open questions, Risks, Next step
 | alm-architect | alm (all resources) |
 | pro-code-developer | pro-code (all resources) |
 | the-critic | the design/plan being reviewed plus quality-review (resources/security-governance-review.md) |
-| solution-reviewer | quality-review, testing (resources/test-strategy.md) |
+| solution-reviewer | quality-review, testing (resources/test-strategy.md), delivery-method (resources/definition-of-done.md: paste the checklist into the brief) |
 | uat-tester | testing, the app's regression suite in `tests/<app>/` |
 | app-analyst | the app/solution names, existing `docs/as-built/`, the change request |
 | support-engineer | the incident report (who, what, when, record ids), ppdv-toolkit, flow-build (trigger checks) |

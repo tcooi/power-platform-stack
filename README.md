@@ -30,6 +30,7 @@ You ──► pp-delivery-lead (main session: asks you, approves, keeps state)
 - **Guardrail hook**: denies shell writes to Dataverse environments not in `.pp/project.json` and asks before production writes. Claude Code reads `hooks/hooks.json`; Copilot CLI gets `hooks.json` in its own format. A wrapper (`scripts/run-guard-hook.sh`) finds the script in either install and never blocks when it can't (a crashing hook in Copilot would deny every call). ppdv's own guard applies in both tools regardless.
 - **Testing like a user**: `uat-tester` sub-agent and `testing` skill (permissions per persona, automation checks, Playwright UI journeys). **Browser fallback** (`browser-automation-fallback`) for designer-only actions, with approval per action; you sign in, agents never type passwords.
 - **Tests**: `node --test tests/offline.test.mjs` (offline tests: hook decisions, toolkit guard, dry runs, manifests; also run by GitHub Actions on every push) and `sh tests/live.sh` (live smoke test against a TEST environment from a project folder).
+- **Routing check (free)**: `node scripts/route-check.mjs` checks that typical requests reach the right skills next to Microsoft's (snapshot in `evals/microsoft-skills.json`; refresh with `--refresh` after a fallback review) and that our descriptions don't overlap. Runs in CI.
 - **Keeping fallbacks current (free)**: `fallbacks.json` records which Microsoft plugin/pac version each fallback was checked against. `ppdv probe` flags local updates, a weekly GitHub Action opens an issue when Microsoft publishes newer versions, and `ppdv fallbacks review --plugin <p>` shows the changelog since then and which entries it mentions; record the outcome with `fallbacks mark` or `fallbacks retire`.
 - **Cleanup**: record anything a test creates with `ppdv artifacts add`, remove it with `ppdv teardown --apply`.
 - **Evals**: `node evals/run.mjs` runs scenarios headless against the lead with the plugin loaded (`claude -p --plugin-dir`) and checks both the answer and the environment. Results in `evals/last-run.json`. `--all` adds the slow Full-mode scenario (lead + 4 sub-agents + critic loop, ~10 min, ~$7 per run), which passed on 2026-10-22.
@@ -93,11 +94,12 @@ It loads `.pp/project.json` (or creates it with you), runs a preflight, picks a 
 
 **Agents** (10): `pp-delivery-lead` (main; decides the work type: new build, change request, incident, release), and sub-agents `requirements-analyst`, `solution-designer`, `alm-architect`, `the-critic`, `pro-code-developer`, `solution-reviewer`, `uat-tester` (regression suite per app), `app-analyst` (as-built + impact analysis of existing apps), `support-engineer` (incident diagnosis).
 
-**Skills** (16; each `SKILL.md` is short and loads `resources/` on demand):
+**Skills** (17; each `SKILL.md` is short and loads `resources/` on demand):
 - Method and tools: `delivery-method`, `tool-selection-guide`, `ppdv-toolkit`, `browser-automation-fallback`
 - Design: `solution-design` (fit-gap, data model, security model, design document)
 - Build standards (used with Microsoft's skills): `dataverse-build`, `security-roles`, `model-driven-build`, `canvas-build`, `flow-build`, `copilot-studio-build`, `pro-code`
 - ALM: `alm` (plan, environments, source control, release solutions, deployment settings, pipelines)
+- Application management: `platform-changes` (Microsoft deprecations, release waves, safe removal of components)
 - Quality and release: `quality-review`, `testing`, `release-and-handover`
 
 Microsoft Learn MCP is bundled (`.mcp.json`).

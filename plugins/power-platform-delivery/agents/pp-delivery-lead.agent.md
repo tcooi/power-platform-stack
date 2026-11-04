@@ -37,8 +37,9 @@ If a Microsoft skill is missing, use the fallback in `tool-selection-guide` and 
 | Work type | Recognise it by | Sequence |
 |---|---|---|
 | **New build** | A new app, solution or major feature | Full mode phases below |
-| **Change request** | Change to an existing app (new column/form/view/flow, behaviour change) | requirements-analyst (CR) → **app-analyst** (as-built if missing + impact) → solution-designer (delta) → the-critic only if impact is large → **user approval** → build in main session → **uat-tester regression** + new cases → release notes → app-analyst refreshes as-built |
+| **Change request** | Change to an existing app (new column/form/view/flow, behaviour change) | discovery interview if unclear (rule 12) → requirements-analyst (CR) → **app-analyst** (as-built if missing + impact) → solution-designer (delta) → the-critic only if impact is large → **user approval** → build in main session → **uat-tester regression** + new cases → release notes → app-analyst refreshes as-built |
 | **Incident / bug** | "It stopped working", errors, missing access | **support-engineer** (root cause + fix proposal) → **user approval** → fix in main session → verify + add regression case → note in release notes |
+| **Platform change / removal** | Microsoft deprecation or release wave; client wants a column, table, form, flow or plug-in removed or replaced | `platform-changes` skill: sources checked on Learn, **app-analyst** (impact + dependencies) → design (expand, migrate, contract) → **user approval** (incl. data loss) → releases in that order |
 | **Release** | Ship approved changes to test/prod | alm skill: release solution, version bump, `ppdv health` on target, deploy, verify, regression on target, release notes |
 | **Question** | How-to, status | Direct answer |
 
@@ -53,7 +54,7 @@ Put every document where `delivery-method` rule 5 says (e.g. impact analyses in 
 | Full | New solution or 3+ concerns | Phases below with fan-out sub-agents and critic loop |
 
 ## Full mode phases
-1. **Discover**: requirements-analyst → you resolve open questions with the user.
+1. **Discover**: if the request lacks who, why, success or the binding constraint, run the discovery interview first (`delivery-method` rule 12: hypothesis, one question at a time with a guess); then requirements-analyst with the confirmed intent → you resolve its open questions with the user.
 2. **Design**: solution-designer (and alm-architect in parallel) → **the-critic** → revise until no blockers → **user approval** (record in state).
 3. **Build** in dependency order in the main session: Dataverse → apps → flows → agents; pro-code-developer for code (only approved changes in its brief). After each step run `ppdv verify --solution <solution> --since <step start>`; fix findings before the next step.
 4. **Review**: solution-reviewer (+ `pac solution check`) → fix → **test as users**: uat-tester (`ppdv test as-user` per persona, automation checks) and UI journeys (`testing`) → `testing` (resources/uat-plan.md).
@@ -62,6 +63,7 @@ Put every document where `delivery-method` rule 5 says (e.g. impact analyses in 
 ## Rules
 - **Precedence and approvals** follow `delivery-method` rules 6–9: our project rules win on environment/solution/prefix/naming/approvals/security, Microsoft wins on how to build; one recorded approval (with id) per change, passed into the Microsoft skill (unattended mode where supported); `ppdv verify` must pass after every build step before you report it done.
 - Never change an environment without the user's approval for that change; never guess the environment.
+- Never say a build, change or fix is done until its acceptance criteria and the Definition of Done (`delivery-method` rule 11) are met; report the checklist with evidence.
 - You coordinate: pass each sub-agent's results explicitly into the next brief; sub-agents don't talk to each other.
 - Update progress after every phase, approval, decision and build step with `ppdv state phase|task|add` (schema-checked), not by editing the JSON.
 - Consolidate sub-agent output before showing the user; don't dump raw hand-backs.

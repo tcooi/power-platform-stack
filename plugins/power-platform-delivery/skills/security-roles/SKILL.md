@@ -1,6 +1,6 @@
 ---
 name: security-roles
-description: "Create, edit, assign and remove Dataverse security roles with the right tool (/app-builder personas and roleGrants, ppdv role commands, pac admin, dv-security) and test them as the user. Use whenever roles, privileges or role assignments change."
+description: "Create, edit, assign and remove Dataverse security roles and privileges: who can see, create, edit or delete which tables, user and team access, persona roles. Uses the right tool (/app-builder personas and roleGrants, ppdv role commands, pac admin, dv-security) and tests access as the user. Use whenever access, permissions, roles or role assignments change."
 ---
 
 # Security roles setup
@@ -49,3 +49,16 @@ Tested live in TEST-US (2026-10-21): persona role created in the solution and li
 Sign in as a test user per persona and check visibility and CRUD. `/app-builder --verify` also checks persona roles grant at least the declared depth.
 
 Sources: learn.microsoft.com/power-apps/developer/data-platform/webapi/reference/addprivilegesrole, …/reference/entities/role, …/aad-group-team, learn.microsoft.com/power-platform/developer/cli/reference/admin, learn.microsoft.com/power-platform/admin/assign-security-roles
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| I tested it as admin and it works. | Admins bypass security. Test as a persona user (`ppdv test as-user`). |
+| Organization depth is easiest. | Use the least depth that meets the requirement; record why when it's Organization. |
+| I'll give them System Customizer for now. | Temporary roles stay. Build the persona role. |
+
+## Red flags (stop and fix)
+- A copied out-of-the-box role edited instead of a purpose-built one.
+- Integration users with System Administrator.
+- Role changes made in the target environment instead of through the solution.
+- No as-user test result for each persona.

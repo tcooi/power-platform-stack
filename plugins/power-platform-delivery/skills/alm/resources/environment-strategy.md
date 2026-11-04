@@ -1,7 +1,7 @@
 # Environment strategy
 
 - Minimum: DEV (unmanaged; one per developer when working in parallel, connected to Git), TEST/UAT (managed), PROD (managed).
-- Developer or sandbox environments for DEV/TEST; Production type for PROD; a production-type host for pipelines.
+- Sandbox environments, or **managed** developer environments (one per user), for DEV/TEST; Production type for PROD; a production-type host for pipelines. Unmanaged developer environments (incl. the free Developer Plan) are deprecated: no new ones from 2026-11-15, suspended from 2026-12-15, deleted from 2027-01-15 (learn.microsoft.com/power-platform/important-changes-coming).
 - Managed environments are required for pipeline targets and for Dataverse Git integration; they need premium licences for users.
 - Name `<client>-<app>-<stage>`; record owner, region, language, currency.
 - Configure DLP policies, solution checker enforcement and (if used) Dataverse MCP client allow-listing per environment.

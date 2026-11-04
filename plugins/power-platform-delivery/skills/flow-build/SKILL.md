@@ -37,3 +37,17 @@ description: "Our standards for Power Automate cloud flows (Dataverse triggers, 
 |---|---|---|---|
 | `power-automate` `create_flow` | Creates the flow outside any solution; FlowAgent can't target one | add it: `ppdv solution add --type 29 --required`, then `ppdv verify` | `flow-solution` |
 | Turning flows on | Plugin or flow service | never PATCH `statecode`; `ppdv flow enable` | `flow-enable` |
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| I'll just PATCH statecode to turn it on. | The trigger isn't registered and the flow never runs. Use `ppdv flow enable`, then `flow check-trigger`. |
+| It ran once, so it works. | Test the failure path too: a Scope with run-after on failure, and a notification. |
+| My own connection is fine. | Flows in solutions use connection references, owned by a service account or application user for production. |
+| No need for a trigger condition. | Without filtering columns and conditions, the flow runs on every update and loops on its own writes. |
+
+## Red flags (stop and fix)
+- A flow outside the project solution (FlowAgent's `create_flow` default).
+- Update triggers without filtering columns.
+- No error handling scope.
+- A flow on in an environment where `ppdv health` reports stuck background jobs (it won't run).

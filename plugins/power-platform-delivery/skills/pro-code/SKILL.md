@@ -17,3 +17,17 @@ description: "Pro-code extensions for Power Platform / D365 CE when configuratio
 |---|---|---|---|
 | `pac pcf push` | Temporary `PowerAppsTools_<prefix>` solution | always `--solution-unique-name <solution>` | `pac-pcf-push-solution` |
 | `pcf` plugin push | Publishes all pending customizations in the environment | tell the user before pushing in shared dev environments | `pcf-publish-all` |
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| A plug-in is quicker than configuration. | Check the config-first order (business rule, formula column, flow) and record why code is needed. |
+| I'll register the step by hand in the target environment. | Step registrations travel in the solution; hand registrations drift and get lost. |
+| pcf push to TEST is fine for a quick check. | `pcf push` is for dev only. Releases go through a solution built from source. |
+| Synchronous is safer. | Sync plug-ins block the user and time out after two minutes. Use async unless the result is needed in the transaction. |
+
+## Red flags (stop and fix)
+- Code written before looking for the existing source in the repo.
+- A PCF version not increased in `ControlManifest.Input.xml` (the import won't update it).
+- Secrets in code or plug-in configuration instead of environment variables / Key Vault.
+- Solution checker findings on the assembly not triaged.

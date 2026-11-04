@@ -23,3 +23,16 @@ description: "Our standards for canvas apps (screens, Power Fx, delegation, perf
 ## Detailed guidance (load the file you need)
 - `resources/canvas-performance-delegation.md` — Review canvas app formulas for delegation warnings and performance. Use when a canvas app is slow or returns incomplete data.
 - `resources/canvas-component-library.md` — Create and reuse canvas component libraries and a consistent theme. Use for multi-app consistency.
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| A personal connection is fine for testing. | It travels with the app and breaks for every other user. Use connection references from the start. |
+| The delegation warning only matters with big data. | Data grows; the app then silently shows the first 500/2000 rows. Fix the query or document the limit. |
+| I'll put the logic in App.OnStart. | Slows every start. Use named formulas and load data where it's needed. |
+
+## Red flags (stop and fix)
+- Delegation warnings left in App Checker.
+- Hard-coded environment URLs, IDs or e-mail addresses (use environment variables).
+- Accessibility errors from App Checker not fixed or waived.
+- The app saved outside the project solution.

@@ -1,6 +1,6 @@
 ---
 name: alm
-description: "Application lifecycle management for Power Platform: ALM plan, environment strategy, source control (Git integration or pac unpack), release solutions, deployment settings, pipelines in Power Platform, GitHub Actions and Azure DevOps. Use at project start and for every export, import or deployment."
+description: "Deploy or move a solution from dev to the test or production environment: application lifecycle management for Power Platform (export, import, upgrade, release solutions, versioning, deployment settings), ALM plan, environment strategy, source control (Git integration or pac unpack), pipelines in Power Platform, GitHub Actions and Azure DevOps. Use at project start and for every solution export, import, deployment or release."
 ---
 
 # Solution ALM checklist
@@ -29,3 +29,17 @@ description: "Application lifecycle management for Power Platform: ALM plan, env
 - `resources/source-control-unpack.md` — Put solutions under source control with Dataverse Git integration or pac solution clone/export/unpack. Use for source-controlled solution development.
 - `resources/github-actions-pipeline.md` — Create GitHub Actions workflows for Power Platform export, check, build and deploy using microsoft/powerplatform-actions. Use for GitHub-based CI/CD.
 - `resources/azure-devops-pipeline.md` — Create Azure DevOps YAML pipelines using Power Platform Build Tools v2. Use for Azure DevOps-based CI/CD.
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| I'll export unmanaged to TEST, it's quicker. | TEST and production get managed solutions only. |
+| We'll set the connections by hand after import. | Use a deployment settings file (`pac solution create-settings`) so every import is the same. |
+| Same version number is fine for a small fix. | Increase the version every release, or the history and upgrades become unreliable. |
+| I'll fix it directly in production. | Hotfixes go through dev as a patch or a fast-tracked release. |
+
+## Red flags (stop and fix)
+- An unmanaged layer on a managed component in TEST or production.
+- A release without solution checker results.
+- Source control not updated after the export.
+- `ppdv health` not run on the target before an import.

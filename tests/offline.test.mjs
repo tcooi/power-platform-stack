@@ -177,3 +177,7 @@ test("ppdv fallbacks: mark and retire are dry runs until --apply", () => {
   assert.ok(m.dryRun && r.dryRun);
   assert.equal(readFileSync(join(plugin, "fallbacks.json"), "utf8"), before);
 });
+test("repo: skill routing check passes (free, lexical)", () => {
+  const r = spawnSync("node", [join(root, "scripts", "route-check.mjs")], { encoding: "utf8" });
+  assert.equal(r.status, 0, r.stdout);
+});

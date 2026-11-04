@@ -1,6 +1,6 @@
 ---
 name: model-driven-build
-description: "Our standards for model-driven apps and changes to out-of-the-box apps (app modules, sitemap, forms, views, command bar, business rules, BPFs, generative pages), applied with Microsoft's /app-builder and /genpage, with ppdv and the browser as fallbacks. Use whenever a model-driven app is built or changed."
+description: "Our standards for model-driven apps and changes to out-of-the-box apps (app modules, sitemap, forms, views with sort and filters, command bar, business rules, business process flows, generative pages), applied with Microsoft's /app-builder and /genpage, with ppdv and the browser as fallbacks. Use whenever a model-driven app, form or view is built or changed."
 ---
 
 # Model-driven build standards
@@ -41,3 +41,17 @@ description: "Our standards for model-driven apps and changes to out-of-the-box 
 | `/app-builder` | One role per persona when `personas[]` is given; edits only roles it created | security model from the design; existing roles via `roleGrants[]` | `mda-persona-roles` |
 | `/app-builder` | Creates/uses the spec's solution | always the project's `solution.uniqueName` and prefix | `mda-solution` |
 | `pac model create` | Default solution | always pass `--solution` | `pac-model-create-solution` |
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| I'll change the managed form in TEST, it's only a small fix. | Managed components are changed in dev and released. An unmanaged layer in TEST blocks future updates. |
+| I'll hand-edit the formxml to put fields in the header. | Exact control IDs are required and a mistake breaks the form. Use the form designer (browser fallback or the user). |
+| Naming the view 'Active Items' is clearest. | It merges into the stock view and loses its sort and filters. Use a distinct name. |
+| A generative page will look better. | Only when a form, view or dashboard can't do the job, and the reason is recorded (`standards.generativePages`). |
+
+## Red flags (stop and fix)
+- App, form or view built outside the project solution (`pac model create` without `--solution`).
+- Edits to a Microsoft out-of-the-box form instead of a copy, without a design decision.
+- A spec rebuilt after hand edits in the designer (the rebuild reverts them).
+- The app checked only as System Administrator.

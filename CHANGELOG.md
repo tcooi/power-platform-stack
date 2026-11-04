@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.11.0 (2026-11-05)
+Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
+- **Shortcuts to refuse and red flags** in the nine build, security, ALM and testing skills (default solution, personal connections, editing managed components in test, PATCHing statecode, testing as admin, pcf push outside dev, …).
+- **Definition of Done** (`delivery-method` rule 11): one standing checklist on top of acceptance criteria; the lead reports it with evidence and solution-reviewer checks it.
+- **New skill `platform-changes`**: Microsoft deprecations and release waves (sources on Learn), and safe removal of components in managed solutions (dependencies, expand → migrate → hide → delete in dev → Upgrade import). New work type in the lead.
+- **Discovery interview** (`delivery-method` rule 12): hypothesis with confidence, one question at a time with a guess, Power Platform questions (personas, licences, out-of-the-box fit, data, integrations); before requirements-analyst for new builds and unclear change requests.
+- **Free routing check** (`scripts/route-check.mjs`, in CI): 24 prompts must reach the right skills next to a snapshot of Microsoft's skill descriptions; our skills and our agents must not overlap. It found four weak descriptions (alm, dataverse-build, security-roles, model-driven-build), now fixed.
+- Environment strategy: unmanaged developer environments are deprecated (no new ones from 2026-11-15, suspended 2026-12-15, deleted 2027-01-15); use sandboxes or managed developer environments. TEST and TEST-US are sandboxes.
+
 ## 2.10.1 (2026-10-25)
 - First fallback review: model-apps 2.19.0, dataverse 1.16.1 and pac 2.14.1. All entries still needed except `dv-int-range` (retired: the Python SDK route now sets whole-number min/max; verified in TEST-US with a temporary column, removed afterwards).
 - Corrected two descriptions: `/app-builder` leaves the new look off by default but writes the header and navigation refresh ON for new apps; a view named like an existing one gets the spec's columns but not its sort or filters (the build now warns).

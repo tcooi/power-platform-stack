@@ -35,3 +35,15 @@ description: "Our standards for Copilot Studio agents (instructions, tools, know
 | Tool | Microsoft default | Our rule | Id |
 |---|---|---|---|
 | `pac copilot init` | New solution `<prefix>_<Name>` | `ppdv solution add --type 10225 --required` into the project solution | `cps-init-solution` |
+
+## Shortcuts to refuse
+| You might think | Instead |
+|---|---|
+| pac copilot init put it in a solution, that's enough. | It made its own solution. Add the agent (type 10225) to the project solution. |
+| I'll test it in the test pane only. | Run an evaluation set (`create-eval-set`) and record the results before release. |
+| Broad instructions cover everything. | Vague instructions give unpredictable routing; scope tools and knowledge per job. |
+
+## Red flags (stop and fix)
+- Knowledge sources or tools using personal credentials.
+- Agent published from a dev copy straight to users without a release.
+- No evaluation results recorded.
