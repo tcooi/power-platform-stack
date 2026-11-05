@@ -7,6 +7,7 @@ Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
 - **New skill `platform-changes`**: Microsoft deprecations and release waves (sources on Learn), and safe removal of components in managed solutions (dependencies, expand → migrate → hide → delete in dev → Upgrade import). New work type in the lead.
 - **Discovery interview** (`delivery-method` rule 12): hypothesis with confidence, one question at a time with a guess, Power Platform questions (personas, licences, out-of-the-box fit, data, integrations); before requirements-analyst for new builds and unclear change requests.
 - **Free routing check** (`scripts/route-check.mjs`, in CI): 24 prompts must reach the right skills next to a snapshot of Microsoft's skill descriptions; our skills and our agents must not overlap. It found four weak descriptions (alm, dataverse-build, security-roles, model-driven-build), now fixed.
+- Evals: new fast scenarios `discovery-interview` and `platform-change-removal`; all 8 fast scenarios pass (2026-11-05).
 - Environment strategy: unmanaged developer environments are deprecated (no new ones from 2026-11-15, suspended 2026-12-15, deleted 2027-01-15); use sandboxes or managed developer environments. TEST and TEST-US are sandboxes.
 
 ## 2.10.1 (2026-10-25)
