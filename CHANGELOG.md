@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.11.1 (2026-11-05)
+- No dependency on the author's environments: evals read the environment, solution and test fixtures from `evals/config.json` (git-ignored; template `evals/config.example.json`), scenarios use placeholders, `tests/live.sh` takes `PP_TABLE`, `PP_ROLE`, `PP_SOLUTION` (+ optional `PP_FLOW`, `PP_TEST_USER`), and `tests/README.md` explains the fixtures to create in your own sandbox. Skills say "verified in a sandbox".
+
 ## 2.11.0 (2026-11-05)
 Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
 - **Shortcuts to refuse and red flags** in the nine build, security, ALM and testing skills (default solution, personal connections, editing managed components in test, PATCHing statecode, testing as admin, pcf push outside dev, …).
@@ -8,10 +11,10 @@ Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
 - **Discovery interview** (`delivery-method` rule 12): hypothesis with confidence, one question at a time with a guess, Power Platform questions (personas, licences, out-of-the-box fit, data, integrations); before requirements-analyst for new builds and unclear change requests.
 - **Free routing check** (`scripts/route-check.mjs`, in CI): 24 prompts must reach the right skills next to a snapshot of Microsoft's skill descriptions; our skills and our agents must not overlap. It found four weak descriptions (alm, dataverse-build, security-roles, model-driven-build), now fixed.
 - Evals: new fast scenarios `discovery-interview` and `platform-change-removal`; all 8 fast scenarios pass (2026-11-05).
-- Environment strategy: unmanaged developer environments are deprecated (no new ones from 2026-11-15, suspended 2026-12-15, deleted 2027-01-15); use sandboxes or managed developer environments. TEST and TEST-US are sandboxes.
+- Environment strategy: unmanaged developer environments are deprecated (no new ones from 2026-11-15, suspended 2026-12-15, deleted 2027-01-15); use sandboxes or managed developer environments.
 
 ## 2.10.1 (2026-10-25)
-- First fallback review: model-apps 2.19.0, dataverse 1.16.1 and pac 2.14.1. All entries still needed except `dv-int-range` (retired: the Python SDK route now sets whole-number min/max; verified in TEST-US with a temporary column, removed afterwards).
+- First fallback review: model-apps 2.19.0, dataverse 1.16.1 and pac 2.14.1. All entries still needed except `dv-int-range` (retired: the Python SDK route now sets whole-number min/max; verified in a sandbox with a temporary column, removed afterwards).
 - Corrected two descriptions: `/app-builder` leaves the new look off by default but writes the header and navigation refresh ON for new apps; a view named like an existing one gets the spec's columns but not its sort or filters (the build now warns).
 - README: install dataverse from `power-platform-skills` (the Anthropic marketplace pins 1.14.0), HTTPS workaround for the install, repo renamed to `tcooi/power-platform-stack`.
 
@@ -32,7 +35,7 @@ Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
 
 ## 2.8.1 (2026-10-22)
 - One document layout for all agents (`delivery-method` rule 5): the live app-analyst test wrote its impact analysis to a different folder than the agent file said.
-- app-analyst verified live on the E2E Test app (as-built + CR-1 impact, read-only, ~9 min).
+- app-analyst verified live on a test app (as-built + CR-1 impact, read-only, ~9 min).
 
 ## 2.8.0 (2026-10-22)
 - Application management: lead decides the work type first (new build, change request, incident, release) with a sequence for each.
@@ -48,7 +51,7 @@ Ideas adapted from addyosmani/agent-skills for Power Platform consulting:
 - Changelog, quick-start, eval results no longer committed.
 
 ## 2.6.0 (2026-10-22)
-- Verified Microsoft `dataverse` plugin path (dv-metadata via the Dataverse CLI) and ALM deployment TEST-US → TEST (release solution, managed export, unpack, deployment settings, import, verification, teardown).
+- Verified Microsoft `dataverse` plugin path (dv-metadata via the Dataverse CLI) and ALM deployment dev sandbox → test sandbox (release solution, managed export, unpack, deployment settings, import, verification, teardown).
 - `ppdv health`: detects a stuck background service (Dataverse-triggered flows and async plug-ins won't run).
 - Teardown saves progress, survives dropped connections.
 

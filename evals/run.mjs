@@ -10,7 +10,15 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const plugin = join(here, "..", "plugins", "power-platform-delivery");
 const ppdv = join(plugin, "scripts", "ppdv.mjs");
-const { real, scenarios } = JSON.parse(readFileSync(join(here, "scenarios.json"), "utf8"));
+// Your own sandbox and test fixtures: evals/config.json (git-ignored; copy config.example.json) or PP_EVAL_CONFIG=<path>.
+const cfgPath = process.env.PP_EVAL_CONFIG || join(here, "config.json");
+if (!existsSync(cfgPath)) { console.error(`No eval config: copy evals/config.example.json to ${cfgPath} and fill in your own sandbox.`); process.exit(2); }
+const cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
+if (/<|>/.test(JSON.stringify(cfg.environment) + JSON.stringify(cfg.solution) + JSON.stringify(cfg.fixtures))) { console.error(`Fill in every <placeholder> in ${cfgPath}.`); process.exit(2); }
+const real = cfg.environment;
+const vars = { prefix: cfg.solution.prefix, solution: cfg.solution.uniqueName, ...cfg.fixtures };
+const fill = (x) => JSON.parse(JSON.stringify(x).replace(/\{\{(\w+)\}\}/g, (m, k) => { if (!(k in vars)) throw new Error(`eval placeholder {{${k}}} has no value in ${cfgPath}`); return vars[k]; }));
+const scenarios = fill(JSON.parse(readFileSync(join(here, "scenarios.json"), "utf8")).scenarios);
 const args = process.argv.slice(2), all = args.includes("--all"), only = args.filter((a) => a !== "--all");
 const results = [];
 
@@ -18,7 +26,7 @@ for (const s of scenarios.filter((x) => (only.length ? only.includes(x.id) : all
   const dir = mkdtempSync(join(tmpdir(), `ppeval-${s.id}-`));
   mkdirSync(join(dir, ".pp", "state"), { recursive: true });
   const envs = Object.fromEntries(Object.entries(s.project).map(([k, v]) => [k, v === "real" ? real : v]));
-  writeFileSync(join(dir, ".pp", "project.json"), JSON.stringify({ client: "eval", environments: envs, solution: { uniqueName: "ClaudeTestSolution", publisher: "ClaudePublisher", prefix: "claude" } }, null, 2));
+  writeFileSync(join(dir, ".pp", "project.json"), JSON.stringify({ client: "eval", environments: envs, solution: cfg.solution }, null, 2));
   const t0 = Date.now();
   const r = spawnSync("claude", ["-p", s.prompt, "--plugin-dir", plugin, "--agent", "power-platform-delivery:pp-delivery-lead", "--output-format", "json",
     "--allowedTools", "Read", "Glob", "Grep", "Skill", "Agent", "Task", "Write", "Edit", "Bash(mkdir:*)", "Bash(ls:*)", "Bash(node:*)", "Bash(dataverse:*)", "Bash(python:*)", "Bash(python3:*)", "Bash(pac org who)", "Bash(pac auth list)", "Bash(az account show:*)", "Bash(dotnet --list-sdks)"],

@@ -1,0 +1,10 @@
+{
+  "about": "Copy to evals/config.json (git-ignored) and fill in your own SANDBOX. Evals write test items there and remove them. Never use a client or production environment.",
+  "environment": { "name": "My sandbox", "url": "https://<org>.crm.dynamics.com", "id": "<environment id (guid)>" },
+  "solution": { "uniqueName": "<unmanaged test solution>", "publisher": "<publisher unique name>", "prefix": "<publisher prefix>" },
+  "fixtures": {
+    "table": "<prefix>_<test table logical name>",
+    "tableLabel": "<test table display name>",
+    "app": "<model-driven app over that table>"
+  }
+}

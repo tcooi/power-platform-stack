@@ -224,7 +224,7 @@
         "whole number",
         "integer"
       ],
-      "retiredIn": "dataverse 1.16.1 (Python SDK 1.1.0 dict spec; verified in TEST-US 2026-10-25)"
+      "retiredIn": "dataverse 1.16.1 (Python SDK 1.1.0 dict spec; verified in a sandbox 2026-10-25)"
     },
     {
       "id": "dv-mcp-optional",

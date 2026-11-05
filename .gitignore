@@ -1,3 +1,4 @@
 evals/last-run.*
 .DS_Store
 node_modules/
+evals/config.json

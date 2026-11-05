@@ -7,7 +7,7 @@ description: "Our standards for Copilot Studio agents (instructions, tools, know
 
 **Microsoft tool**: `pac copilot clone|init`, **`pac copilot pull` before every edit**, `pac copilot push`, `pac copilot pack --publisher-prefix <prefix>` for pipelines; or the Copilot Studio VS Code extension. Details: `resources/agent-instructions-design.md`, `resources/agent-evaluation-plan.md`.
 
-## Verified in TEST-US (2026-10-22)
+## Verified in a sandbox (2026-10-22)
 - `pac copilot init --name … --publisher-prefix … --instructions … --environment <id>` scaffolds, packs, imports and connects the workspace in about a minute.
 - **It puts the agent in its own new solution** (`<prefix>_<Name>`), not the project's working solution. Add it: `ppdv solution add --solution <working solution> --id <bot id> --type 10225 --required --apply` (brings the agent's components along), then check with `ppdv solution has`.
 - `pac copilot pull` → edit YAML → `pac copilot push` works; confirm the change with `ppdv request GET "botcomponents?$filter=_parentbotid_value eq <bot id> and componenttype eq 15"`.

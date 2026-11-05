@@ -44,7 +44,7 @@ Build roles repeatably with tools, not by clicking. Every change still needs use
 
 ## Verify
 Permissions as the user: `ppdv test as-user --user <upn> --table <t> --ops create,read,update,delete,read-others --apply`.
-Tested live in TEST-US (2026-10-21): persona role created in the solution and linked to the app, assigned with `pac admin assign-user`, one privilege removed with `RemovePrivilegeRole`, drift caught by verify.
+Tested live in a sandbox (2026-10-21): persona role created in the solution and linked to the app, assigned with `pac admin assign-user`, one privilege removed with `RemovePrivilegeRole`, drift caught by verify.
 
 Sign in as a test user per persona and check visibility and CRUD. `/app-builder --verify` also checks persona roles grant at least the declared depth.
 
